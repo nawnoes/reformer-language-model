@@ -1,7 +1,9 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import re
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 
 from tqdm import tqdm
@@ -13,7 +15,7 @@ import os
 import json
 import logging
 from datetime import datetime
-from dataloader.namu import NamuWikiDataset
+from dataloader.wiki import NamuWikiDataset, NamuWikiDatasetForMLM
 
 
 
@@ -31,7 +33,7 @@ class ReformerTrainer(object):
                  eval_batch_size=None,
                  tb_writer=False,
                  tb_dir='./tb_logs',
-                 log_dir='./logs'):
+                 log_dir='../logs'):
         """
         Provides an easy to use class for pretraining and evaluating a Reformer Model.
         :param dataset: (torch.utils.data.Dataset) containing all of the data you wish to utilize during training.
@@ -87,61 +89,6 @@ class ReformerTrainer(object):
                          eval_dataloader size: {len(eval_loader.dataset)} | shuffle: {eval_shuffle}''')
         return train_loader, eval_loader
 
-    def mask_tokens(self, inputs: torch.Tensor, mlm_probability=0.15, pad=True):
-        """ Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% random, 10% original. """
-        labels = inputs.clone()
-        # mlm_probability defaults to 0.15 in Bert
-        probability_matrix = torch.full(labels.shape, mlm_probability)
-        special_tokens_mask = [
-            self.tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) for val in labels.tolist()
-        ]
-        probability_matrix.masked_fill_(torch.tensor(special_tokens_mask, dtype=torch.bool), value=0.0)
-        if self.tokenizer._pad_token is not None:
-            padding_mask = labels.eq(self.tokenizer.pad_token_id)
-            probability_matrix.masked_fill_(padding_mask, value=0.0)
-        masked_indices = torch.bernoulli(probability_matrix).bool()
-        labels[~masked_indices] = -100  # We only compute loss on masked tokens
-
-        # 80% of the time, we replace masked input tokens with tokenizer.mask_token ([MASK])
-        indices_replaced = torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
-        inputs[indices_replaced] = self.tokenizer.convert_tokens_to_ids(self.tokenizer.mask_token)
-
-        # 10% of the time, we replace masked input tokens with random word
-        indices_random = torch.bernoulli(torch.full(labels.shape, 0.5)).bool() & masked_indices & ~indices_replaced
-        random_words = torch.randint(len(self.tokenizer), labels.shape, dtype=torch.long)
-        inputs[indices_random] = random_words[indices_random]
-
-        if pad:
-            input_pads = self.max_len - inputs.shape[-1]
-            label_pads = self.max_len - labels.shape[-1]
-
-            inputs = F.pad(inputs, pad=(0, input_pads), value=self.tokenizer.pad_token_id)
-            labels = F.pad(labels, pad=(0, label_pads), value=self.tokenizer.pad_token_id)
-
-        # The rest of the time (10% of the time) we keep the masked input tokens unchanged
-        return inputs, labels
-
-    def _tokenize_input_ids(self, input_ids: list, pad_to_max_length: bool = True):
-        """
-        Helper function to clean up the train and eval functions
-        :param input_ids: inputs to tokenize.
-        :param pad_to_max_length: Whether you want to pad the inputs to the tokenizer.max_len
-        :return: Tensor containing training data.
-        """
-        # inputs = torch.cat(
-        #     [
-        #         self.tokenizer.encode(
-        #             input_ids[i],
-        #             add_special_tokens=True,
-        #             max_length=self.max_len,
-        #             pad_to_max_length=pad_to_max_length,
-        #             return_tensors='pt'
-        #         ) \
-        #         for i in range(len(input_ids))
-        #     ]
-        # )
-        inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=True, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt'))
-        return inputs
 
     def train(self,
               epochs,
@@ -199,54 +146,52 @@ class ReformerTrainer(object):
                                     position=1,
                                     leave=True,
                                     total=len(train_dataloader)):
-                for data in batch:
-                    inputs = self._tokenize_input_ids(data, pad_to_max_length=True)
-                    inputs, labels = self.mask_tokens(inputs)
-                    inputs, labels = inputs.to(self.device), labels.to(self.device)
-                    output = self.model(inputs)
+                inputs, labels = batch
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                output = self.model(inputs)
 
-                    # only calculating loss on masked tokens
-                    loss_mx = labels != -100
-                    output = output[loss_mx].view(-1, self.tokenizer.vocab_size)
-                    labels = labels[loss_mx].view(-1)
+                # only calculating loss on masked tokens
+                loss_mx = labels != -100
+                output = output[loss_mx].view(-1, self.tokenizer.vocab_size)
+                labels = labels[loss_mx].view(-1)
 
-                    loss = loss_fn(output, labels)
+                loss = loss_fn(output, labels)
 
-                    if gradient_accumulation_steps > 1:
-                        loss /= gradient_accumulation_steps
+                if gradient_accumulation_steps > 1:
+                    loss /= gradient_accumulation_steps
 
-                    loss.backward()
+                loss.backward()
 
-                    step_loss += loss.item()
-                    losses[global_steps] = loss.item()
-                    local_steps += 1
-                    global_steps += 1
+                step_loss += loss.item()
+                losses[global_steps] = loss.item()
+                local_steps += 1
+                global_steps += 1
 
-                    if global_steps % gradient_accumulation_steps == 0:
-                        optimizer.step()
-                        self.model.zero_grad()
+                if global_steps % gradient_accumulation_steps == 0:
+                    optimizer.step()
+                    self.model.zero_grad()
 
-                    if global_steps % log_steps == 0:
-                        if self.tb_writer:
-                            self.writer.add_scalar('Train/Loss', step_loss / local_steps, global_steps)
-                            self.writer.close()
-                        logging.info(
-                            f'''{datetime.now()} | Train Loss: {step_loss / local_steps} | Steps: {global_steps}''')
+                if global_steps % log_steps == 0:
+                    if self.tb_writer:
+                        self.writer.add_scalar('Train/Loss', step_loss / local_steps, global_steps)
+                        self.writer.close()
+                    logging.info(
+                        f'''{datetime.now()} | Train Loss: {step_loss / local_steps} | Steps: {global_steps}''')
 
-                        with open(f'{self.log_dir}/train_results.json', 'w') as results_file:
-                            json.dump(losses, results_file)
-                            results_file.close()
-                        step_loss = 0.0
-                        local_steps = 0
+                    with open(f'{self.log_dir}/train_results.json', 'w') as results_file:
+                        json.dump(losses, results_file)
+                        results_file.close()
+                    step_loss = 0.0
+                    local_steps = 0
 
-                    if global_steps % ckpt_steps == 0:
-                        # evaluating before every checkpoint
-                        self.evaluate(eval_dataloader)
-                        model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
-                        torch.save(model_to_save.state_dict(), f'{ckpt_dir}/model_state_dict.pt')
-                        torch.save(optimizer.state_dict(), f'{ckpt_dir}/optimizer_state_dict.pt')
+                if global_steps % ckpt_steps == 0:
+                    # evaluating before every checkpoint
+                    self.evaluate(eval_dataloader)
+                    model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
+                    torch.save(model_to_save.state_dict(), f'{ckpt_dir}/model_state_dict.pt')
+                    torch.save(optimizer.state_dict(), f'{ckpt_dir}/optimizer_state_dict.pt')
 
-                        logging.info(f'{datetime.now()} | Saved checkpoint to: {ckpt_dir}')
+                    logging.info(f'{datetime.now()} | Saved checkpoint to: {ckpt_dir}')
 
         model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
         torch.save(model_to_save.state_dict(), f'{ckpt_dir}/model_state_dict.pt')
@@ -272,26 +217,24 @@ class ReformerTrainer(object):
 
         logging.info(f'{datetime.now()} | Evaluating...')
         for step, batch in tqdm(enumerate(dataloader), desc='Evaluating', leave=True, total=len(dataloader)):
-            for data in batch:
-                inputs = self._tokenize_input_ids(data, pad_to_max_length=True)
-                inputs, labels = self.mask_tokens(inputs)
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
+            inputs, labels = batch
+            inputs, labels = inputs.to(self.device), labels.to(self.device)
 
-                with torch.no_grad():
-                    output = self.model(inputs)
+            with torch.no_grad():
+                output = self.model(inputs)
 
-                loss_mx = labels != -100
-                output_ids = output[loss_mx].view(-1, self.tokenizer.vocab_size)
-                labels = labels[loss_mx].view(-1)
-                tmp_eval_loss = loss_fn(output_ids, labels)
-                tmp_perplexity = torch.exp(tmp_eval_loss)
+            loss_mx = labels != -100
+            output_ids = output[loss_mx].view(-1, self.tokenizer.vocab_size)
+            labels = labels[loss_mx].view(-1)
+            tmp_eval_loss = loss_fn(output_ids, labels)
+            tmp_perplexity = torch.exp(tmp_eval_loss)
 
-                if self.n_gpu > 1:
-                    tmp_eval_loss = tmp_eval_loss.mean()
+            if self.n_gpu > 1:
+                tmp_eval_loss = tmp_eval_loss.mean()
 
-                eval_loss += tmp_eval_loss.item()
-                perplexity += tmp_perplexity.item()
-                eval_steps += 1
+            eval_loss += tmp_eval_loss.item()
+            perplexity += tmp_perplexity.item()
+            eval_steps += 1
 
             eval_loss /= eval_steps
             perplexity /= eval_steps
@@ -312,7 +255,8 @@ if __name__ == '__main__':
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
     max_len = 256
 
-    dataset = NamuWikiDataset(tokenizer, max_len, path=mini_data_path)
+    # dataset = NamuWikiDataset(tokenizer, max_len, path=mini_data_path)
+    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=mini_data_path)
 
     model = ReformerLM(
         num_tokens=tokenizer.vocab_size,
@@ -324,11 +268,11 @@ if __name__ == '__main__':
     )
     trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=32, eval_batch_size=32)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
-    model = trainer.train(epochs=3,
+    model = trainer.train(epochs=30,
                           train_dataloader=train_dataloader,
                           eval_dataloader=eval_dataloader,
                           log_steps=10,
                           ckpt_steps=100,
                           ckpt_dir='../checkpoints',
                           gradient_accumulation_steps=1)
-    torch.save(model, './ckpts/model.bin')
+    torch.save(model, '../checkpoints/model.bin')
