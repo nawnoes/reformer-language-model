@@ -238,6 +238,9 @@ class ReformerTrainer(object):
                 self.writer.add_scalar('Perplexity', perplexity, eval_steps)
                 self.writer.close()
             logging.info(f'{datetime.now()} | Step: {step} | Eval Loss: {eval_loss} | Perplexity: {perplexity}')
+            with open(f'{self.log_dir}/eval_results.txt', 'a+') as results_file:
+                results_file.write(f'{datetime.now()} | Step: {step} | Eval Loss: {eval_loss} | Perplexity: {perplexity}\n')
+                results_file.close()
 
         return None
 
@@ -287,6 +290,8 @@ def main():
 if __name__ == '__main__':
     wordpiece_vocab_path = "../data/vocab.txt"
     mini_data_path ="../data/mini_namuwiki.txt"
+    data_path ="../data/namuwiki.txt"
+
     checkpoint_dir = "../checkpoints"
     checkpoint_path = f'{checkpoint_dir}/reformer.bin'
 
@@ -309,7 +314,7 @@ if __name__ == '__main__':
 
 
     # dataset = NamuWikiDataset(tokenizer, max_len, path=mini_data_path)
-    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=mini_data_path)
+    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=data_path)
 
     model = ReformerLM(
         num_tokens=tokenizer.vocab_size,
