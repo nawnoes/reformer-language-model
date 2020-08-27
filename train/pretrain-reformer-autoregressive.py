@@ -2,6 +2,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import re
+import argparse
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader, random_split
@@ -17,12 +18,7 @@ import logging
 from datetime import datetime
 from dataloader.wiki import NamuWikiDataset, NamuWikiDatasetForMLM
 
-
-
-
-
 class ReformerTrainer(object):
-
     def __init__(self,
                  dataset,
                  model,
@@ -88,8 +84,6 @@ class ReformerTrainer(object):
         logging.info(f'''train_dataloader size: {len(train_loader.dataset)} | shuffle: {train_shuffle}
                          eval_dataloader size: {len(eval_loader.dataset)} | shuffle: {eval_shuffle}''')
         return train_loader, eval_loader
-
-
     def train(self,
               epochs,
               train_dataloader,
@@ -139,13 +133,10 @@ class ReformerTrainer(object):
         logging.info(f'{datetime.now()} | Epochs: {epochs} | log_steps: {log_steps} | ckpt_steps: {ckpt_steps}')
         logging.info(f'{datetime.now()} | gradient_accumulation_steps: {gradient_accumulation_steps}')
 
-        for epoch in tqdm(range(epochs), desc='Epochs', position=0):
+        for epoch in range(epochs): #tqdm(range(epochs), desc='Epochs', position=0):
             logging.info(f'{datetime.now()} | Epoch: {epoch}')
-            for step, batch in tqdm(enumerate(train_dataloader),
-                                    desc='Epoch Iterator',
-                                    position=1,
-                                    leave=True,
-                                    total=len(train_dataloader)):
+            pb = tqdm(enumerate(train_dataloader), desc=f'Epoch-{epoch} Iterator', total=len(train_dataloader))
+            for step, batch in pb:
                 inputs, labels = batch
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 output = self.model(inputs)
@@ -160,7 +151,11 @@ class ReformerTrainer(object):
                 if gradient_accumulation_steps > 1:
                     loss /= gradient_accumulation_steps
 
-                loss.backward()
+                try:
+                    loss.backward()
+                except Exception as err:
+                    print(err)
+                    continue
 
                 step_loss += loss.item()
                 losses[global_steps] = loss.item()
@@ -175,9 +170,7 @@ class ReformerTrainer(object):
                     if self.tb_writer:
                         self.writer.add_scalar('Train/Loss', step_loss / local_steps, global_steps)
                         self.writer.close()
-                    logging.info(
-                        f'''{datetime.now()} | Train Loss: {step_loss / local_steps} | Steps: {global_steps}''')
-
+                    pb.set_postfix_str(f'''{datetime.now()} | Train Loss: {step_loss / local_steps} | Steps: {global_steps}''')
                     with open(f'{self.log_dir}/train_results.json', 'w') as results_file:
                         json.dump(losses, results_file)
                         results_file.close()
@@ -248,12 +241,22 @@ class ReformerTrainer(object):
 
         return None
 
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--vocab_path", default="../data/vocab.txt", required=True)
+    parser.add_argument("--data_path", default="../data/mini_namuwiki.txt", required=True)
+    parser.add_argument("--config_path", default="../data/mini_namuwiki.txt", required=True)
 
-if __name__ == '__main__':
-    wordpiece_vocab_path = "../data/vocab.txt"
-    mini_data_path ="../data/mini_namuwiki.txt"
-    tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
+
+    args = parser.parse_args()
+
+    # args.model_name, args.data_dir, **hparams))
+    wordpiece_vocab_path = args.vocab_path
+    mini_data_path = args.data_path
     max_len = 256
+    batch_size = 4
+
+    tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
     # dataset = NamuWikiDataset(tokenizer, max_len, path=mini_data_path)
     dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=mini_data_path)
@@ -264,9 +267,10 @@ if __name__ == '__main__':
         depth=6,
         heads=8,
         max_seq_len=max_len,
-        causal=True # auto-regressive 학습을 위한 설정
+        causal=True  # auto-regressive 학습을 위한 설정
     )
-    trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=32, eval_batch_size=32)
+    trainer = ReformerTrainer(dataset, model, tokenizer, max_len, train_batch_size=batch_size,
+                              eval_batch_size=batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
     model = trainer.train(epochs=30,
                           train_dataloader=train_dataloader,
@@ -275,4 +279,55 @@ if __name__ == '__main__':
                           ckpt_steps=100,
                           ckpt_dir='../checkpoints',
                           gradient_accumulation_steps=1)
+
     torch.save(model, '../checkpoints/model.bin')
+
+
+
+if __name__ == '__main__':
+    wordpiece_vocab_path = "../data/vocab.txt"
+    mini_data_path ="../data/mini_namuwiki.txt"
+    checkpoint_dir = "../checkpoints"
+    checkpoint_path = f'{checkpoint_dir}/reformer.bin'
+
+    # Model Hyperparameter
+    max_len = 256
+    batch_size = 4
+    dim = 512
+    depth = 6
+    heads = 8
+    causal = True
+
+    # Train Hyperparameter
+    epochs = 30,
+    log_steps = 10,
+    ckpt_steps = 100,
+    ckpt_dir = checkpoint_path,
+    gradient_accumulation_steps = 1
+
+    tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
+
+
+    # dataset = NamuWikiDataset(tokenizer, max_len, path=mini_data_path)
+    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=mini_data_path)
+
+    model = ReformerLM(
+        num_tokens=tokenizer.vocab_size,
+        dim=dim,
+        depth=depth,
+        heads=heads,
+        max_seq_len=max_len,
+        causal=causal # auto-regressive 학습을 위한 설정
+    )
+    trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size)
+    train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
+
+    model = trainer.train(epochs=epochs,
+                          train_dataloader=train_dataloader,
+                          eval_dataloader=eval_dataloader,
+                          log_steps=log_steps,
+                          ckpt_steps=ckpt_steps,
+                          ckpt_dir= checkpoint_dir,
+                          gradient_accumulation_steps=gradient_accumulation_steps)
+
+    torch.save(model, checkpoint_path)
