@@ -186,7 +186,7 @@ class ReformerTrainer(object):
                 if global_steps % ckpt_steps == 0:
                     # evaluating before every checkpoint
                     self.evaluate(eval_dataloader)
-                    self.model.train()
+                    self.model.train() # turn to train mode
                     model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
                     torch.save(model_to_save.state_dict(), f'{ckpt_dir}/model_state_dict.pt')
                     torch.save(optimizer.state_dict(), f'{ckpt_dir}/optimizer_state_dict.pt')
