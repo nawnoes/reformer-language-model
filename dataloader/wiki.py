@@ -1,7 +1,12 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import os
 import re
 import json
+import logging
 import torch
+from tqdm import tqdm
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 from transformers import BertTokenizer
@@ -45,7 +50,7 @@ class NamuWikiDataset(Dataset):
     def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
         print('namu wiki data load start')
 
-        data_file = open(path, 'r')
+        data_file = open(path, 'r', encoding="utf-8")
         self.docs = []
         doc = ""
         while True:
@@ -68,7 +73,7 @@ class NamuWikiDataset(Dataset):
 
 class NamuWikiDatasetForMLM(Dataset):
     def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
-        print('namu wiki data load start')
+        print('namu wiki data load...')
 
         data_file = open(path, 'r')
         self.tokenizer = tokenizer
@@ -76,10 +81,13 @@ class NamuWikiDatasetForMLM(Dataset):
         self.docs = []
         doc = ""
 
-        while True:
-            line = data_file.readline()
-            if not line: break
+        num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
+        print('data line numbers:',num_lines)
+        data_file =  open(path, 'r',encoding='utf-8')
 
+        for line in tqdm(data_file,
+                         desc='namuwiki data loader',
+                         total=num_lines):
             line = line[:-1]
             if len(self.tokenizer.encode(doc)) <max_len and len(self.tokenizer.encode(doc + line))<max_len:
                 doc += line
@@ -137,10 +145,45 @@ class NamuWikiDatasetForMLM(Dataset):
         labels= labels.squeeze()
 
         return inputs, labels
+def make_data_upto_maxlen( tokenizer, max_len, path="../data/namuwiki.txt"):
+    split_data = path.split('.')
+    split_data[-2]+= f'-{max_len}'
+    return_file_path = '.'.join(split_data)
+    logging.info('file name:'+return_file_path)
 
+    return_file= open(return_file_path,'w',encoding='utf-8')
+    docs = []
+    doc = ""
+    doc_len = 0
+
+    num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
+    logging.info('file line number: '+str(num_lines))
+    data_file = open(path, 'r')
+
+    for line in tqdm(data_file,
+                     desc='namuwiki data maker',
+                     total=num_lines):
+        line = line[:-1]
+        line_len = len(tokenizer.encode(line))
+        added_doc_len = doc_len +line_len
+        if line =="":
+            return_file.write(doc + "\n")
+            doc = ""
+            doc_len = 0
+        elif  doc_len <max_len and added_doc_len<max_len:
+            doc += line
+            doc_len += line_len
+        elif added_doc_len>= max_len and doc_len<max_len:
+            return_file.write(doc+"\n")
+            # print(f"max_len-{max_len} real_len-{len(tokenizer.encode(doc))} doc-{doc}\n\n")
+            doc = line
+            doc_len = line_len
+    return_file.close()
+    data_file.close()
 if __name__ == '__main__':
     wordpiece_vocab_path = "../data/vocab.txt"
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
-    dataset =NamuWikiDataset(tokenizer,512)
-    print(dataset)
+    # dataset =NamuWikiDataset(tokenizer,512)
+    # print(dataset)
+    make_data_upto_maxlen(tokenizer,512)

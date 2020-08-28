@@ -1,5 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
+import sys
+sys.path.append('../')
 
 import re
 import argparse
@@ -135,7 +137,11 @@ class ReformerTrainer(object):
 
         for epoch in range(epochs): #tqdm(range(epochs), desc='Epochs', position=0):
             logging.info(f'{datetime.now()} | Epoch: {epoch}')
-            pb = tqdm(enumerate(train_dataloader), desc=f'Epoch-{epoch} Iterator', total=len(train_dataloader))
+            pb = tqdm(enumerate(train_dataloader),
+                      desc=f'Epoch-{epoch} Iterator',
+                      total=len(train_dataloader),
+                      bar_format='{l_bar}{bar:10}{r_bar}'
+                      )
             for step, batch in pb:
                 inputs, labels = batch
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -154,7 +160,7 @@ class ReformerTrainer(object):
                 try:
                     loss.backward()
                 except Exception as err:
-                    print(err)
+                    print('loss.backward():',err)
                     continue
 
                 step_loss += loss.item()
@@ -180,6 +186,7 @@ class ReformerTrainer(object):
                 if global_steps % ckpt_steps == 0:
                     # evaluating before every checkpoint
                     self.evaluate(eval_dataloader)
+                    self.model.train()
                     model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
                     torch.save(model_to_save.state_dict(), f'{ckpt_dir}/model_state_dict.pt')
                     torch.save(optimizer.state_dict(), f'{ckpt_dir}/optimizer_state_dict.pt')
@@ -209,7 +216,11 @@ class ReformerTrainer(object):
         eval_steps = 0
 
         logging.info(f'{datetime.now()} | Evaluating...')
-        for step, batch in tqdm(enumerate(dataloader), desc='Evaluating', leave=True, total=len(dataloader)):
+        for step, batch in tqdm(enumerate(dataloader),
+                                desc='Evaluating',
+                                leave=True,
+                                total=len(dataloader),
+                                bar_format='{l_bar}{bar:10}{r_bar}'):
             inputs, labels = batch
             inputs, labels = inputs.to(self.device), labels.to(self.device)
 
@@ -297,24 +308,24 @@ if __name__ == '__main__':
 
     # Model Hyperparameter
     max_len = 256
-    batch_size = 4
+    batch_size = 32
     dim = 512
     depth = 6
     heads = 8
     causal = True
 
     # Train Hyperparameter
-    epochs = 30,
-    log_steps = 10,
-    ckpt_steps = 100,
-    ckpt_dir = checkpoint_path,
+    epochs = 30
+    log_steps = 10
+    ckpt_steps = 100
+    ckpt_dir = checkpoint_path
     gradient_accumulation_steps = 1
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
 
-    # dataset = NamuWikiDataset(tokenizer, max_len, path=mini_data_path)
-    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=data_path)
+    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=mini_data_path)
+    # dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=data_path)
 
     model = ReformerLM(
         num_tokens=tokenizer.vocab_size,
