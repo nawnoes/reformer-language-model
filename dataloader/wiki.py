@@ -89,12 +89,7 @@ class NamuWikiDatasetForMLM(Dataset):
                          desc='namuwiki data loader',
                          total=num_lines):
             line = line[:-1]
-            if len(self.tokenizer.encode(doc)) <max_len and len(self.tokenizer.encode(doc + line))<max_len:
-                doc += line
-            elif len(self.tokenizer.encode(doc + line))>= max_len and len(self.tokenizer.encode(doc))<max_len:
-                self.docs.append(doc)
-                # print(f"max_len-{max_len} real_len-{len(tokenizer.encode(doc))} doc-{doc}\n\n")
-                doc = line
+            self.docs.append(line)
         print('namu wiki data load complete')
 
     def mask_tokens(self, inputs: torch.Tensor, mlm_probability=0.15, pad=True):
