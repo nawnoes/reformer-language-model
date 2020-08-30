@@ -301,7 +301,8 @@ def main():
 if __name__ == '__main__':
     wordpiece_vocab_path = "../data/vocab.txt"
     mini_data_path ="../data/mini_namuwiki.txt"
-    data_path ="../data/namuwiki.txt"
+    namuwiki_path ="../data/namuwiki.txt"
+    kowiki_path = '../data/kowiki-512.txt'
 
     checkpoint_dir = "../checkpoints"
     checkpoint_path = f'{checkpoint_dir}/reformer.bin'

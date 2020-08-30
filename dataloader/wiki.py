@@ -3,6 +3,7 @@ warnings.filterwarnings("ignore")
 
 import os
 import re
+import kss
 import json
 import logging
 import torch
@@ -175,10 +176,35 @@ def make_data_upto_maxlen( tokenizer, max_len, path="../data/namuwiki.txt"):
             doc_len = line_len
     return_file.close()
     data_file.close()
+
+"""
+문장 분리
+"""
+def kss_sentence_seperator(file, text):
+    for sent in kss.split_sentences(text):
+        file.write(sent.replace('\n', '')+"\n")
 if __name__ == '__main__':
     wordpiece_vocab_path = "../data/vocab.txt"
+    wiki_data_path = "../data/kowiki_origin.txt"
+    # processed_wiki_data_path = "../data/processed_kowiki.txt"
+    processed_wiki_data_path2 = "../data/kowiki.txt"
+    # processed_wiki_data_path2 = "../data/kowiki_data.txt"
+
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
     # dataset =NamuWikiDataset(tokenizer,512)
     # print(dataset)
-    make_data_upto_maxlen(tokenizer,512)
+    # make_data_upto_maxlen(tokenizer,512)
+    #
+    # f = open(processed_wiki_data_path,'r',encoding='utf-8')
+    # f2 = open(processed_wiki_data_path2,'w',encoding="utf-8")
+    #
+    # while True:
+    #     line = f.readline()
+    #     if not line: break
+    #     kss_sentence_seperator(f2,line)
+    #
+    # f.close()
+    # f2.close()
+    make_data_upto_maxlen(tokenizer, 512,path=processed_wiki_data_path2)
+
