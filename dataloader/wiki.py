@@ -74,7 +74,7 @@ class NamuWikiDataset(Dataset):
 
 class NamuWikiDatasetForMLM(Dataset):
     def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
-        print('namu wiki data load...')
+        logging.info('start wiki data load')
 
         data_file = open(path, 'r')
         self.tokenizer = tokenizer
@@ -91,7 +91,7 @@ class NamuWikiDatasetForMLM(Dataset):
                          total=num_lines):
             line = line[:-1]
             self.docs.append(line)
-        print('namu wiki data load complete')
+        logging.info('complete data load')
 
     def mask_tokens(self, inputs: torch.Tensor, mlm_probability=0.15, pad=True):
         """ Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% random, 10% original. """
