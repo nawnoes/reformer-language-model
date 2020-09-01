@@ -10,4 +10,6 @@
     4. Decoder Pretrain
     5. Fine-tuning
  
-    
+ ## Reformer-pytorch 
+ - `ReformerLM`의 **return_embeddings**은 reformer의 결과 값만 받고 싶은경우 설정
+  

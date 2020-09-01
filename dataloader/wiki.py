@@ -141,6 +141,39 @@ class NamuWikiDatasetForMLM(Dataset):
         labels= labels.squeeze()
 
         return inputs, labels
+
+class WikiDatasetForAutoRegressive(Dataset):
+    def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
+        logging.info('start wiki data load')
+
+        self.tokenizer = tokenizer
+        self.max_len =max_len
+        self.docs = []
+
+        num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
+        data_file =  open(path, 'r',encoding='utf-8')
+
+        for line in tqdm(data_file,
+                         desc='namuwiki data loader',
+                         total=num_lines):
+            line = line[:-1]
+            self.docs.append(line)
+        logging.info('complete data load')
+
+    def _tokenize_input_ids(self, input_ids: list, pad_to_max_length: bool = True):
+        inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=True, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt',truncation=True))
+        return inputs
+    def __len__(self):
+        return len(self.docs)
+
+    def __getitem__(self, idx):
+        inputs = self._tokenize_input_ids(self.docs[idx], pad_to_max_length=True)
+        labels = inputs.clone()
+
+        inputs= inputs.squeeze()
+        labels= labels.squeeze()
+
+        return inputs, labels
 def make_data_upto_maxlen( tokenizer, max_len, path="../data/namuwiki.txt"):
     split_data = path.split('.')
     split_data[-2]+= f'-{max_len}'
@@ -188,7 +221,7 @@ if __name__ == '__main__':
     wiki_data_path = "../data/kowiki_origin.txt"
     # processed_wiki_data_path = "../data/processed_kowiki.txt"
     processed_wiki_data_path2 = "../data/kowiki.txt"
-    # processed_wiki_data_path2 = "../data/kowiki_data.txt"
+    test_path ="../data/mini_namuwiki.txt"
 
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
@@ -206,5 +239,8 @@ if __name__ == '__main__':
     #
     # f.close()
     # f2.close()
-    make_data_upto_maxlen(tokenizer, 512,path=processed_wiki_data_path2)
+    # make_data_upto_maxlen(tokenizer, 512,path=processed_wiki_data_path2)
+    dataset = WikiDatasetForAutoRegressive(tokenizer,512,test_path)
+    for data in dataset:
+        print(data)
 

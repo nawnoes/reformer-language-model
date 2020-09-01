@@ -18,7 +18,7 @@ import logging
 from datetime import datetime
 from dataloader.wiki import NamuWikiDataset, NamuWikiDatasetForMLM
 
-class ReformerTrainer(object):
+class ReformerTester(object):
     def __init__(self,
                  dataset,
                  model,
@@ -190,10 +190,10 @@ if __name__ == '__main__':
         max_seq_len=max_len,
         causal=causal # auto-regressive 학습을 위한 설정
     )
-    trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size, pretrained_checkpoint_path=pretrained_checkpoint_path,)
-    train_dataloader = trainer.build_dataloaders(train_test_split=0)
+    tester = ReformerTester(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size, pretrained_checkpoint_path=pretrained_checkpoint_path,)
+    train_dataloader = tester.build_dataloaders(train_test_split=0)
 
-    model = trainer.test(epochs=epochs,
+    model = tester.test(epochs=epochs,
                           train_dataloader=train_dataloader,
                           log_steps=log_steps,
                           ckpt_steps=ckpt_steps,
