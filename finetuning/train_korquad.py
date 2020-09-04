@@ -42,7 +42,7 @@ def main():
 
     parser.add_argument("--output_dir", default='../output', type=str,
                         help="The output directory where the model checkpoints and predictions will be written.")
-    parser.add_argument("--checkpoint", default='../checkpoints/epoch3-reformer-model.pt',
+    parser.add_argument("--checkpoint", default='../checkpoints/epoch12-reformer-small.pt',
                         type=str,
                         help="checkpoint")
 
