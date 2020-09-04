@@ -57,7 +57,7 @@ def main():
     parser.add_argument("--max_query_length", default=96, type=int,
                         help="The maximum number of tokens for the question. Questions longer than this will "
                              "be truncated to this length.")
-    parser.add_argument("--train_batch_size", default=2, type=int, help="Total batch size for training.")
+    parser.add_argument("--train_batch_size", default=16, type=int, help="Total batch size for training.")
     parser.add_argument("--learning_rate", default=5e-5, type=float, help="The initial learning rate for Adam.")
     parser.add_argument("--num_train_epochs", default=4.0, type=float,
                         help="Total number of training epochs to perform.")
