@@ -12,11 +12,11 @@ import torch
 from torch.utils.data import (DataLoader, RandomSampler, TensorDataset)
 from tqdm import tqdm, trange
 
-from model.qa import ReformerMRCModel
-from utils.optimization import AdamW, WarmupLinearSchedule
-from utils.tokenization import BertTokenizer
-from hu
-from utils.korquad_utils import read_squad_examples, convert_examples_to_features
+from model.mrc import ReformerMRCModel
+from transformers.optimization import AdamW
+from util.schedule import WarmupLinearSchedule
+from transformers import BertTokenizer
+from util.korquad_utils import read_squad_examples, convert_examples_to_features
 
 if sys.version_info[0] == 2:
     import cPickle as pickle
@@ -38,13 +38,12 @@ def main():
     parser = argparse.ArgumentParser()
     # Required parameters
 
-    parser.add_argument("--output_dir", default='output', type=str,
+    parser.add_argument("--output_dir", default='../output', type=str,
                         help="The output directory where the model checkpoints and predictions will be written.")
-    parser.add_argument("--checkpoint", default='pretrain_ckpt/bert_small_ckpt.bin',
+    parser.add_argument("--checkpoint", default='../checkpoints/epoch3-reformer-model.pt',
                         type=str,
                         help="checkpoint")
-    parser.add_argument("--model_config", default='data/bert_small.json',
-                        type=str)
+
     # Other parameters
     parser.add_argument("--train_file", default='data/KorQuAD_v1.0_train.json', type=str,
                         help="SQuAD json for training. E.g., train-v1.1.json")
@@ -108,14 +107,29 @@ def main():
 
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
+    # 1. Wordpiece Tokenizer
+    wordpiece_vocab_path = "../data/vocab.txt"
+    tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
-    tokenizer = BertTokenizer('data/ko_vocab_32k.txt',
-                              max_len=args.max_seq_length,
-                              do_basic_tokenize=True)
-    # Prepare model
-    config = Config.from_json_file(args.model_config)
-    model = QuestionAnswering(config)
-    model.bert.load_state_dict(torch.load(args.checkpoint))
+    # 2. Model Hyperparameter
+    max_len = 512
+    batch_size = 128
+    dim = 512
+    depth = 6
+    heads = 8
+    causal = False
+
+    # 3. Prepare model
+    model = ReformerMRCModel(
+        num_tokens=tokenizer.vocab_size,
+        dim=dim,
+        depth=depth,
+        heads=heads,
+        max_seq_len=max_len,
+        causal=causal  # auto-regressive 학습을 위한 설정
+    )
+
+    model.reformer.load_state_dict(torch.load(args.checkpoint))
     num_params = count_parameters(model)
     logger.info("Total Parameter: %d" % num_params)
     model.to(device)
