@@ -7,7 +7,8 @@ import math
 
 from io import open
 
-from utils.tokenization import BasicTokenizer, whitespace_tokenize
+from transformers import BasicTokenizer
+from util.tokenization import whitespace_tokenize
 
 logger = logging.getLogger(__name__)
 

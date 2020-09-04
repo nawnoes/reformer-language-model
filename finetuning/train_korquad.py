@@ -1,4 +1,6 @@
 from __future__ import absolute_import, division, print_function
+import warnings
+warnings.filterwarnings("ignore")
 
 import argparse
 import logging
@@ -45,7 +47,7 @@ def main():
                         help="checkpoint")
 
     # Other parameters
-    parser.add_argument("--train_file", default='data/KorQuAD_v1.0_train.json', type=str,
+    parser.add_argument("--train_file", default='./data/korquad/KorQuAD_v1.0_train.json', type=str,
                         help="SQuAD json for training. E.g., train-v1.1.json")
     parser.add_argument("--max_seq_length", default=512, type=int,
                         help="The maximum total input sequence length after WordPiece tokenization. Sequences "
@@ -55,7 +57,7 @@ def main():
     parser.add_argument("--max_query_length", default=96, type=int,
                         help="The maximum number of tokens for the question. Questions longer than this will "
                              "be truncated to this length.")
-    parser.add_argument("--train_batch_size", default=16, type=int, help="Total batch size for training.")
+    parser.add_argument("--train_batch_size", default=2, type=int, help="Total batch size for training.")
     parser.add_argument("--learning_rate", default=5e-5, type=float, help="The initial learning rate for Adam.")
     parser.add_argument("--num_train_epochs", default=4.0, type=float,
                         help="Total number of training epochs to perform.")
@@ -129,7 +131,7 @@ def main():
         causal=causal  # auto-regressive 학습을 위한 설정
     )
 
-    model.reformer.load_state_dict(torch.load(args.checkpoint))
+    model.reformer.load_state_dict(torch.load(args.checkpoint, map_location=device),strict=False)
     num_params = count_parameters(model)
     logger.info("Total Parameter: %d" % num_params)
     model.to(device)
@@ -206,7 +208,7 @@ def main():
             if n_gpu == 1:
                 batch = tuple(t.to(device) for t in batch)  # multi-gpu does scattering it-self
             input_ids, input_mask, segment_ids, start_positions, end_positions = batch
-            loss = model(input_ids, segment_ids, input_mask, start_positions, end_positions)
+            loss = model(input_ids, start_positions, end_positions)
             if n_gpu > 1:
                 loss = loss.mean()  # mean() to average on multi-gpu.
             if args.fp16:

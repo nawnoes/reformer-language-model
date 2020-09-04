@@ -11,8 +11,8 @@ class ReformerMRCHead(nn.Module):
     self.dropout = nn.Dropout(hidden_dropout_prob)
     self.out_proj = nn.Linear(4*dim,num_labels)
 
-  def forward(self, features, **kwargs):
-    x = features[:, 0, :]  # take <s> token (equiv. to [CLS])
+  def forward(self, x, **kwargs):
+    # x = features[:, 0, :]  # take <s> token (equiv. to [CLS])
     x = self.dropout(x)
     x = self.dense(x)
     x = get_activation("gelu")(x)  # although BERT uses tanh here, it seems Electra authors used gelu here
@@ -33,7 +33,6 @@ class ReformerMRCModel(nn.Module):
                 return_embeddings=True    # reformer 임베딩을 받기 위한 설정
             )
         self.mrc_head = ReformerMRCHead(dim, num_labels)
-
     def forward(self,
                 input_ids=None,
                 start_positions=None,
