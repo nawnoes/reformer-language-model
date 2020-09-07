@@ -84,12 +84,6 @@ def main():
                         type=int,
                         default=42,
                         help="random seed for initialization")
-    parser.add_argument('--fp16',
-                        action='store_true',
-                        help="Whether to use 16-bit float precision instead of 32-bit")
-    parser.add_argument('--fp16_opt_level', type=str, default='O2',
-                        help="For fp16: Apex AMP optimization level selected in ['O0', 'O1', 'O2', and 'O3']."
-                             "See details at https://nvidia.github.io/apex/amp.html")
     parser.add_argument('--null_score_diff_threshold',
                         type=float, default=0.0,
                         help="If null_score - best_non_null is greater than the threshold predict null.")
@@ -98,8 +92,6 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
     n_gpu = torch.cuda.device_count()
-    logger.info("device: {} n_gpu: {}, 16-bits training: {}".format(
-        device, n_gpu, args.fp16))
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -172,14 +164,6 @@ def main():
                                      warmup_steps=num_train_optimization_steps*0.1,
                                      t_total=num_train_optimization_steps)
 
-    if args.fp16:
-        try:
-            from apex import amp
-        except ImportError:
-            raise ImportError(
-                "Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training.")
-        model, optimizer = amp.initialize(model, optimizer, opt_level=args.fp16_opt_level)
-
     logger.info("***** Running training *****")
     logger.info("  Num orig examples = %d", len(train_examples))
     logger.info("  Num split examples = %d", len(train_features))
@@ -201,42 +185,34 @@ def main():
     model.train()
     global_step = 0
     epoch = 0
-    for _ in trange(int(args.num_train_epochs), desc="Epoch"):
-        iter_bar = tqdm(train_dataloader, desc="Train(XX Epoch) Step(XX/XX) (Mean loss=X.X) (loss=X.X)")
+    for i in range(int(args.num_train_epochs)):
+        iter_bar = tqdm(train_dataloader, desc=f"Epoch-{i} Train(XX Epoch) Step(XX/XX) (Mean loss=X.X) (loss=X.X)")
         tr_step, total_loss, mean_loss = 0, 0., 0.
         for step, batch in enumerate(iter_bar):
             if n_gpu == 1:
                 batch = tuple(t.to(device) for t in batch)  # multi-gpu does scattering it-self
             input_ids, input_mask, segment_ids, start_positions, end_positions = batch
             loss = model(input_ids, start_positions, end_positions)
-            if n_gpu > 1:
-                loss = loss.mean()  # mean() to average on multi-gpu.
-            if args.fp16:
-                with amp.scale_loss(loss, optimizer) as scaled_loss:
-                    scaled_loss.backward()
-                torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
-            else:
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
 
             scheduler.step()
             optimizer.step()
             optimizer.zero_grad()
             global_step += 1
             tr_step += 1
-            total_loss += loss
+            total_loss += loss.item()
             mean_loss = total_loss / tr_step
-            iter_bar.set_description("Train Step(%d / %d) (Mean loss=%5.5f) (loss=%5.5f)" %
+            iter_bar.set_description(f"Epoch-{i} Train Step(%d / %d) (Mean loss=%5.5f) (loss=%5.5f)" %
                                      (global_step, num_train_step, mean_loss, loss.item()))
 
         logger.info("** ** * Saving file * ** **")
         model_checkpoint = "korquad_%d.bin" % (epoch)
         logger.info(model_checkpoint)
         output_model_file = os.path.join(args.output_dir,model_checkpoint)
-        if n_gpu > 1:
-            torch.save(model.module.state_dict(), output_model_file)
-        else:
-            torch.save(model.state_dict(), output_model_file)
+
+        torch.save(model.state_dict(), output_model_file)
         epoch += 1
 
 
