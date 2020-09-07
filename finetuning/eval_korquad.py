@@ -112,17 +112,15 @@ def load_and_cache_examples(args, tokenizer):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--checkpoint", default='output/korquad_3.bin',
+    parser.add_argument("--checkpoint", default='../output/korquad_3.bin',
                         type=str,
                         help="checkpoint")
-    parser.add_argument("--output_dir", default='debug', type=str,
+    parser.add_argument("--output_dir", default='../debug', type=str,
                         help="The output directory where the model checkpoints and predictions will be written.")
 
     ## Other parameters
-    parser.add_argument("--predict_file", default='data/KorQuAD_v1.0_dev.json', type=str,
+    parser.add_argument("--predict_file", default='./data/korquad/KorQuAD_v1.0_dev.json', type=str,
                         help="SQuAD json for predictions. E.g., dev-v1.1.json or test-v1.1.json")
-    parser.add_argument("--config_name", default="data/bert_small.json", type=str,
-                        help="Pretrained config name or path if not the same as model_name")
 
     parser.add_argument("--max_seq_length", default=512, type=int,
                         help="The maximum total input sequence length after WordPiece tokenization. Sequences "
@@ -174,7 +172,6 @@ def main():
 
     # 2. Model Hyperparameter
     max_len = 512
-    batch_size = 128
     dim = 512
     depth = 6
     heads = 8
