@@ -171,12 +171,9 @@ class ReformerTrainer(object):
             inputs, labels = inputs.to(self.device), labels.to(self.device)
 
             with torch.no_grad():
-                output = self.model(inputs)
+                lm_logit, loss = self.model(inputs, labels)
 
-            loss_mx = labels != -100
-            output_ids = output[loss_mx].view(-1, self.tokenizer.vocab_size)
-            labels = labels[loss_mx].view(-1)
-            tmp_eval_loss = loss_fn(output_ids, labels)
+            tmp_eval_loss = loss
             tmp_perplexity = torch.exp(tmp_eval_loss)
 
             if self.n_gpu > 1:
