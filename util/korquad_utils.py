@@ -9,6 +9,8 @@ import re
 import argparse
 import json
 import sys
+import string
+
 from io import open
 
 from transformers import BasicTokenizer
