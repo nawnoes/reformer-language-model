@@ -174,41 +174,6 @@ class WikiDatasetForAutoRegressive(Dataset):
         labels= labels.squeeze()
 
         return inputs, labels
-def make_data_upto_maxlen( tokenizer, max_len, path="../data/namuwiki.txt"):
-    split_data = path.split('.')
-    split_data[-2]+= f'-{max_len}'
-    return_file_path = '.'.join(split_data)
-    logging.info('file name:'+return_file_path)
-
-    return_file= open(return_file_path,'w',encoding='utf-8')
-    docs = []
-    doc = ""
-    doc_len = 0
-
-    num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
-    logging.info('file line number: '+str(num_lines))
-    data_file = open(path, 'r')
-
-    for line in tqdm(data_file,
-                     desc='namuwiki data maker',
-                     total=num_lines):
-        line = line[:-1]
-        line_len = len(tokenizer.encode(line))
-        added_doc_len = doc_len +line_len
-        if line =="":
-            return_file.write(doc + "\n")
-            doc = ""
-            doc_len = 0
-        elif  doc_len <max_len and added_doc_len<max_len:
-            doc += line
-            doc_len += line_len
-        elif added_doc_len>= max_len and doc_len<max_len:
-            return_file.write(doc+"\n")
-            # print(f"max_len-{max_len} real_len-{len(tokenizer.encode(doc))} doc-{doc}\n\n")
-            doc = line
-            doc_len = line_len
-    return_file.close()
-    data_file.close()
 
 """
 문장 분리
