@@ -18,8 +18,8 @@ def make_data_upto_maxlen( tokenizer, max_len, dir_path, file_name):
 
     return_file= open(return_file_path,'w',encoding='utf-8')
     docs = []
-    doc = "[CLS]"
-    doc_len = 0
+    doc = "[CLS] "
+    doc_len = 1
 
     num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
     logging.info('file line number: '+str(num_lines))
@@ -33,15 +33,15 @@ def make_data_upto_maxlen( tokenizer, max_len, dir_path, file_name):
         added_doc_len = doc_len +line_len
         if line =="":
             return_file.write(doc + "\n")
-            doc = "[CLS]"
+            doc = "[CLS] "
             doc_len = 1
         elif  doc_len <max_len+1 and added_doc_len<max_len+1:
-            doc += line+"[SEP]"
+            doc += line+" [SEP] "
             doc_len += line_len+1
         elif added_doc_len>= max_len+1 and doc_len<max_len+1:
             return_file.write(doc+"\n")
             # print(f"max_len-{max_len} real_len-{len(tokenizer.encode(doc))} doc-{doc}\n\n")
-            doc = "[CLS]"+line
+            doc = "[CLS] "+line
             doc_len = line_len+1
     return_file.close()
     data_file.close()
