@@ -202,12 +202,17 @@ if __name__ == '__main__':
     checkpoint_path = f'{checkpoint_dir}/autoregressive_reformer.bin'
 
     # Model Hyperparameter
-    max_len = 512
-    batch_size = 2
-    dim = 512
-    depth = 6
-    heads = 8
-    causal = False
+    """
+    Model Name     layer      d_model      n_head    d_head    batchsize     learning rate     n_params
+    GPT-3 samll     12         768           12        64         0.5M        6.0 x 10^-4       125M
+    GPT-3 medium    24         1024          16        65         0.5M        3.0 x 10^-4       350M
+    """
+    max_len = 5000
+    batch_size = 32
+    dim = 768
+    depth = 24
+    heads = 16
+    causal = True # True for Auto Regressive,
 
     # Train Hyperparameter
     epochs = 30

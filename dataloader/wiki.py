@@ -176,7 +176,7 @@ class WikiDatasetForAutoRegressive(Dataset):
         return inputs, labels
 class DatasetForAutoRegressive(Dataset):
     def __init__(self, tokenizer, max_len, dir_path):
-        logging.info('start wiki data load')
+        logging.info('Start pretraining data load!')
 
         self.tokenizer = tokenizer
         self.max_len =max_len
@@ -186,14 +186,16 @@ class DatasetForAutoRegressive(Dataset):
         file_list = os.listdir(dir_path)
 
         # num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
-        for file_name in file_list:
+        file_progress_bar = tqdm(file_list, position=0, leave=True)
+        for file_name in file_progress_bar:
             path = f'{dir_path}/{file_name}'
             data_file =  open(path, 'r',encoding='utf-8')
             for line in tqdm(data_file,
-                             desc='namuwiki data loader'):
+                             desc='Data load for pretraining',
+                             position=1, leave=True):
                 line = line[:-1]
                 self.docs.append(line)
-        logging.info('complete data load')
+        logging.info('Complete data load')
 
     def _tokenize_input_ids(self, input_ids: list, add_special_tokens:bool = False, pad_to_max_length: bool = True):
         inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=add_special_tokens, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt',truncation=True))
