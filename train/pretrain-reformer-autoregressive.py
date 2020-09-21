@@ -17,7 +17,7 @@ import os
 import json
 import logging
 from datetime import datetime
-from dataloader.wiki import WikiDatasetForAutoRegressive
+from dataloader.wiki import DatasetForAutoRegressive
 from model.autoregressive import ReformerAutoRegressiveModel
 
 class ReformerTrainer(object):
@@ -194,9 +194,10 @@ class ReformerTrainer(object):
         return None
 
 if __name__ == '__main__':
-    wordpiece_vocab_path = "../data/vocab.txt"
+    wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
     mini_data_path ="../data/mini_namuwiki.txt"
-    data_path ="../data/kowiki.txt" # 2020-08-30 kowiki data path
+    dir_path ="../data/autoregressive/" # 2020-08-30 kowiki data path
+    # dir_path ="/" # 2020-08-30 kowiki data path
 
     checkpoint_dir = "../checkpoints"
     checkpoint_path = f'{checkpoint_dir}/autoregressive_reformer.bin'
@@ -215,7 +216,7 @@ if __name__ == '__main__':
     causal = True # True for Auto Regressive,
 
     # Train Hyperparameter
-    epochs = 30
+    epochs = 3
     log_steps = 100
     ckpt_steps = 100
     ckpt_dir = checkpoint_path
@@ -223,9 +224,7 @@ if __name__ == '__main__':
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
-
-    dataset = WikiDatasetForAutoRegressive(tokenizer, max_len, path=data_path)
-    # dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=data_path)
+    dataset = DatasetForAutoRegressive(tokenizer, max_len, dir_path=dir_path)
 
     model = ReformerAutoRegressiveModel(
         num_tokens=tokenizer.vocab_size,
@@ -235,7 +234,7 @@ if __name__ == '__main__':
         max_seq_len=max_len,
     )
     trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size)
-    train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
+    train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0)
 
     model = trainer.train(epochs=epochs,
                           train_dataloader=train_dataloader,
