@@ -124,7 +124,7 @@ class ReformerTrainer(object):
 
                 if global_steps % log_steps == 0:
                     pb.set_postfix_str(f'''{datetime.now()} | Train Loss: {step_loss / local_steps} | Steps: {global_steps}''')
-                    with open(f'{self.log_dir}/train_results.json', 'w') as results_file:
+                    with open(f'{self.log_dir}/autoregressive_train_results.json', 'w') as results_file:
                         json.dump(losses, results_file)
                         results_file.close()
                     step_loss = 0.0
@@ -208,9 +208,9 @@ if __name__ == '__main__':
     GPT-3 samll     12         768           12        64         0.5M        6.0 x 10^-4       125M
     GPT-3 medium    24         1024          16        65         0.5M        3.0 x 10^-4       350M
     """
-    max_len = 5000
-    batch_size = 32
-    dim = 768
+    max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) ==0이어야함.
+    batch_size = 2
+    dim = 1024
     depth = 24
     heads = 16
     causal = True # True for Auto Regressive,
@@ -234,7 +234,7 @@ if __name__ == '__main__':
         max_seq_len=max_len,
     )
     trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size)
-    train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0)
+    train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
     model = trainer.train(epochs=epochs,
                           train_dataloader=train_dataloader,
