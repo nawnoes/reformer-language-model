@@ -186,7 +186,7 @@ class DatasetForAutoRegressive(Dataset):
         file_list = os.listdir(dir_path)
 
         # num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
-        file_progress_bar = tqdm(file_list, position=0, leave=True)
+        file_progress_bar = tqdm(file_list, position=0, leave=True, bar_format='{l_bar}{bar:10}{r_bar}')
         for file_name in file_progress_bar:
             path = f'{dir_path}/{file_name}'
             data_file =  open(path, 'r',encoding='utf-8')

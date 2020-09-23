@@ -40,11 +40,14 @@ class ReformerTrainer(object):
         self.eval_batch_size = eval_batch_size
         self.log_dir = log_dir
 
+        if device is None:
+            self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+
         if eval_batch_size is None:
             self.eval_batch_size = train_batch_size
 
 
-        logging.basicConfig(filename=f'{log_dir}/{datetime.now().date()}.log', level=logging.INFO)
+        logging.basicConfig(filename=f'{log_dir}/autoregressive-{datetime.now().date()}.log', level=logging.INFO)
 
     def build_dataloaders(self, train_test_split=0.1, train_shuffle=True, eval_shuffle=True):
         """
@@ -210,14 +213,14 @@ if __name__ == '__main__':
     """
     max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) ==0이어야함.
     batch_size = 2
-    dim = 1024
-    depth = 24
+    dim = 512
+    depth = 1
     heads = 16
     causal = True # True for Auto Regressive,
 
     # Train Hyperparameter
     epochs = 3
-    log_steps = 100
+    log_steps = 2
     ckpt_steps = 100
     ckpt_dir = checkpoint_path
     gradient_accumulation_steps = 1

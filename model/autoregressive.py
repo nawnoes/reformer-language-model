@@ -32,5 +32,4 @@ class ReformerAutoRegressiveModel(nn.Module):
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
             loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
-
         return lm_logits,loss
