@@ -77,6 +77,5 @@ causal = False
 ##### 진행중..🚒
 
  
- ## Reformer-pytorch 
+ ## Reformer-pytorch
  - `ReformerLM`의 **return_embeddings**은 reformer의 결과 값만 받고 싶은경우 설정
-  
