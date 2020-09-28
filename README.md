@@ -101,6 +101,7 @@ class ReformerLM(nn.Module):
 - 첫번째, 학습데이터에서 [CLS]와 [SEP] 토큰을 넣어주지 않은것
 - 두번째, Segment Embedding을 사용하지 않은것
 등 을 원인으로 생각해볼 수 있다. 
+
 |Task| exact_match | f1 score|
 |------|---|---|
 |Korquad v1.0|56.8|84.96|
