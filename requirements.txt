@@ -1,4 +1,5 @@
 torch
 transformers
 reformer_pytorch
+electra-pytorch
 kss
