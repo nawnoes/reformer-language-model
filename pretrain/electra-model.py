@@ -227,7 +227,7 @@ if __name__ == '__main__':
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
-    dataset = DatasetForAutoRegressive(tokenizer, max_len, dir_path=dir_path)
+    # dataset = DatasetForAutoRegressive(tokenizer, max_len, dir_path=dir_path)
 
     model = ReformerAutoRegressiveModel(
         num_tokens=tokenizer.vocab_size,
@@ -248,3 +248,4 @@ if __name__ == '__main__':
                           gradient_accumulation_steps=gradient_accumulation_steps)
 
     torch.save(model, checkpoint_path)
+
