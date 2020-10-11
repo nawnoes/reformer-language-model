@@ -6,6 +6,11 @@ import os
 import json
 import torch
 from model.autoregressive import ReformerAutoRegressiveModel
+def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
+    token_len = len(token_indices)
+    diff_len = max_length - token_len
+    result = token_indices + [pad_token_id]*diff_len
+    return result
 
 if __name__ =="__main__":
     wordpiece_vocab_path = "./data/wpm-vocab-all.txt"
@@ -46,15 +51,23 @@ if __name__ =="__main__":
     )
     model.load_state_dict(torch.load(PATH,map_location=torch.device('cpu')))
 
-    sent = '2019년 한해를 보내며,'
+    sent = '주제: 대화,  세상을 살아가는 것이 쉽지 않은 이유는 우리가 앞에 놓인 일들에 대해 예측할 수 없기 때문이다. '
+    padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:
-      input_ids = torch.tensor([tokenizer.cls_token_id,]  + tokenized_sentence).unsqueeze(0)
-      pred = model(input_ids)[0]
-      gen = tokenizer.decode(torch.argmax(pred, axis=-1).squeeze().tolist())[-1]
+      input_ids = sentence_mask_to_max_length([tokenizer.cls_token_id,]  + tokenized_sentence,128,0)
+      input_ids = torch.tensor(input_ids).unsqueeze(0)
+
+      output = model(input_ids)
+      pred = output[0]
+      gen = tokenizer.decode(torch.argmax(pred, axis=-1).squeeze().tolist()[len(tokenized_sentence)]).replace(' ','')
       if gen == '[SEP]':
-          break
-      sent += gen.replace('▁', ' ')
-      # toked = tok(sent)
-    sent
+          pass
+          # break
+      if '##'in gen:
+        sent += gen.replace('##','')
+      else:
+        sent += ' '+gen
+      print(sent)
+      tokenized_sentence = tokenizer.encode(sent, add_special_tokens=False)
 
