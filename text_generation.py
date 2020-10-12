@@ -51,7 +51,7 @@ if __name__ =="__main__":
     )
     model.load_state_dict(torch.load(PATH,map_location=torch.device('cpu')))
 
-    sent = '주제: 대화,  세상을 살아가는 것이 쉽지 않은 이유는 우리가 앞에 놓인 일들에 대해 예측할 수 없기 때문이다. '
+    sent = '세상을 살아가는 것이 쉽지 않은 이유는 우리가 앞에 놓인 일들에 대해 예측할 수 없기 때문이다. '
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:
