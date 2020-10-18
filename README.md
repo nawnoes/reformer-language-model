@@ -1,5 +1,5 @@
-# reformer-playground
-[reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)를 이용한 다양한 Reformer Language Model 사전 학습 테스트
+# Reformer Language Model
+[reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)를 이용한 다양한 Reformer Language Model Pretrain
 
 ## index
     1. Vocab 생성
