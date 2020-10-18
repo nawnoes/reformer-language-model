@@ -48,16 +48,16 @@ def top_p(logits, vocab, threshold = 0.9):
 
     return gen_word
 
-def top_k(predict, vocab, k):
+def top_k(predict, k, is_uniform_sample=False):
   # topk 중 랜덤으로 선택된 값을 반환.
   probs, indexs = torch.topk(predict, k=k,dim=-1)
 
+  if is_uniform_sample:
+    # uniform sampling
+    sampled_index = random.randint(0, k - 1)
+  else:
+    # sampling by probability
+    # 확률에 따라 샘플링 된 인덱스를 반환
+    sampled_index = torch.multinomial(probs,1)
 
-  # uniform sampling
-  #rand_num = random.randint(0, k - 1)
-
-  # sampling by probability
-  # 확률에 따라 샘플링 된 인덱스를 반환
-  sampled_index = torch.multinomial(probs,1)
-
-  return sampled_index
+  return indexs[sampled_index]
