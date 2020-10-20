@@ -9,16 +9,14 @@ from torch.utils.data import Dataset
 
 class ElectraDataset(Dataset):
     def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
-        logging.info('start wiki data load')
-
         self.tokenizer = tokenizer
         self.max_len =max_len
         self.docs = []
 
         num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
-        print('data line numbers:',num_lines)
-        data_file =  open(path, 'r',encoding='utf-8')
+        logging.info(f'number of data line ${num_lines}')
 
+        data_file =  open(path, 'r',encoding='utf-8')
         for line in tqdm(data_file,
                          desc='Dataset Loader',
                          total=num_lines):

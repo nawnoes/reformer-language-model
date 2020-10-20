@@ -19,8 +19,10 @@ import logging
 from datetime import datetime
 from dataloader.electra import ElectraDataset
 from electra_pytorch import Electra
+from reformer_pytorch import ReformerLM
 
-class ReformerTrainer(object):
+
+class ElectraTrainer(object):
     def __init__(self,
                  dataset,
                  model,
@@ -206,11 +208,6 @@ if __name__ == '__main__':
     checkpoint_path = f'{checkpoint_dir}/electra_reformer.bin'
 
     # Model Hyperparameter
-    """
-    Model Name     layer      d_model      n_head    d_head    batchsize     learning rate     n_params
-    GPT-3 samll     12         768           12        64         0.5M        6.0 x 10^-4       125M
-    GPT-3 medium    24         1024          16        65         0.5M        3.0 x 10^-4       350M
-    """
     max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) ==0이어야함.
     batch_size = 2
     dim = 512
@@ -227,16 +224,51 @@ if __name__ == '__main__':
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
-    # dataset = DatasetForAutoRegressive(tokenizer, max_len, dir_path=dir_path)
+    dataset = ElectraDataset(tokenizer, max_len, dir_path=dir_path)
+    # Electra Model
+    # (1) instantiate the generator and discriminator, making sure that the generator is roughly a quarter to a half of the size of the discriminator
 
-    model = ReformerAutoRegressiveModel(
-        num_tokens=tokenizer.vocab_size,
-        dim=dim,
-        depth=depth,
-        heads=heads,
-        max_seq_len=max_len,
+    generator = ReformerLM(
+        num_tokens=20000,
+        emb_dim=128,
+        dim=256,  # smaller hidden dimension
+        heads=4,  # less heads
+        ff_mult=2,  # smaller feed forward intermediate dimension
+        dim_head=64,
+        depth=12,
+        max_seq_len=1024
     )
-    trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size)
+
+    discriminator = ReformerLM(
+        num_tokens=20000,
+        emb_dim=128,
+        dim=1024,
+        dim_head=64,
+        heads=16,
+        depth=12,
+        ff_mult=4,
+        max_seq_len=1024,
+        return_embeddings=True
+    )
+    # (2) weight tie the token and positional embeddings of generator and discriminator
+
+    generator.token_emb = discriminator.token_emb
+    generator.pos_emb = discriminator.pos_emb
+    # weight tie any other embeddings if available, token type embeddings, etc.
+
+    # (3) instantiate electra
+
+    discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(1024, 1))
+
+    model = Electra(
+        generator,
+        discriminator_with_adapter,
+        mask_token_id = 2,          # the token id reserved for masking
+        pad_token_id = 0,           # the token id for padding
+        mask_prob = 0.15,           # masking probability for masked language modeling
+        mask_ignore_token_ids = [3]  # ids of tokens to ignore for mask modeling ex. (cls, sep)
+    )
+    trainer = ElectraTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
     model = trainer.train(epochs=epochs,
