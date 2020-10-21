@@ -20,6 +20,7 @@ from datetime import datetime
 from dataloader.electra import ElectraDataset
 from electra_pytorch import Electra
 from reformer_pytorch import ReformerLM
+from util.arg import ElectraConfig
 
 
 class ElectraTrainer(object):
@@ -199,28 +200,7 @@ class ElectraTrainer(object):
         return None
 
 if __name__ == '__main__':
-    wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
-    mini_data_path ="../data/mini_namuwiki.txt"
-    dir_path ="../data/electra/" # 2020-08-30 kowiki data path
-    # dir_path ="/" # 2020-08-30 kowiki data path
-
-    checkpoint_dir = "../checkpoints"
-    checkpoint_path = f'{checkpoint_dir}/electra_reformer.bin'
-
-    # Model Hyperparameter
-    max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) ==0이어야함.
-    batch_size = 2
-    dim = 512
-    depth = 1
-    heads = 16
-    causal = True # True for Auto Regressive,
-
-    # Train Hyperparameter
-    epochs = 3
-    log_steps = 2
-    ckpt_steps = 100
-    ckpt_dir = checkpoint_path
-    gradient_accumulation_steps = 1
+    config = ElectraConfig().get_config()
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
@@ -229,7 +209,7 @@ if __name__ == '__main__':
     # (1) instantiate the generator and discriminator, making sure that the generator is roughly a quarter to a half of the size of the discriminator
 
     generator = ReformerLM(
-        num_tokens=20000,
+        num_tokens=tokenizer.vocab_size,
         emb_dim=128,
         dim=256,  # smaller hidden dimension
         heads=4,  # less heads

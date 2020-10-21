@@ -1,0 +1,21 @@
+{
+  "vocab_path" : "../data/wpm-vocab-all.txt",
+  "mini_data_path" :"../data/mini_namuwiki.txt",
+  "data_path" :"../data/electra/" ,
+  "checkpoint_dir" : "../checkpoints",
+  "checkpoint_filename" : "electra_reformer.bin",
+
+  "generator_config_path": "../pretrain/config/generator.json",
+  "discriminator_config_path": "../pretrain/config/discriminator.json",
+
+  "max_len" : 5120,
+  "batch_size" : 2,
+  "dim" : 512,
+  "depth" : 1,
+  "heads" : 16,
+  "causal" : true,
+  "epochs" : 3,
+  "log_steps" : 2,
+  "ckpt_steps" : 100,
+  "gradient_accumulation_steps" : 1
+}
