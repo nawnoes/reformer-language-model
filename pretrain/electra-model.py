@@ -113,10 +113,11 @@ class ElectraTrainer(object):
                       bar_format='{l_bar}{bar:10}{r_bar}'
                       )
             for step, batch in pb:
-                inputs, labels = batch
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                lm_logit, loss = self.model(inputs,labels)
+                input_data = batch
+                input_data = input_data.to(self.device)
+                output = self.model(input_data)
 
+                loss = output.loss
                 loss.backward()
 
                 step_loss += loss.item()
@@ -200,45 +201,52 @@ class ElectraTrainer(object):
         return None
 
 if __name__ == '__main__':
-    config = ElectraConfig().get_config()
+    # 1. Config
+    train_config, gen_config, disc_config = ElectraConfig().get_config()
 
-    tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
+    # 2. Tokenizer
+    tokenizer = BertTokenizer(vocab_file=train_config.vocab_path, do_lower_case=False)
 
-    dataset = ElectraDataset(tokenizer, max_len, dir_path=dir_path)
-    # Electra Model
-    # (1) instantiate the generator and discriminator, making sure that the generator is roughly a quarter to a half of the size of the discriminator
+    # 3. Dataset
+    dataset = ElectraDataset(tokenizer, train_config.max_len, dir_path=train_config.data_path)
 
+    # 4. Electra Model
+    # 4.1. instantiate the generator and discriminator,
+    # making sure that the generator is roughly a quarter to a half of the size of the discriminator
+    # 제너레이터의 크기는 디스크리미네이터의 1/4~ 1/2 크기로
+    # Generator
     generator = ReformerLM(
         num_tokens=tokenizer.vocab_size,
-        emb_dim=128,
-        dim=256,  # smaller hidden dimension
-        heads=4,  # less heads
-        ff_mult=2,  # smaller feed forward intermediate dimension
-        dim_head=64,
-        depth=12,
-        max_seq_len=1024
+        emb_dim= gen_config.emb_dim,
+        dim=gen_config.emb_dim,  # smaller hidden dimension
+        heads=gen_config.heads,  # less heads
+        ff_mult=gen_config.ff_mult,  # smaller feed forward intermediate dimension
+        dim_head=gen_config.dim_head,
+        depth=gen_config.depth,
+        max_seq_len=train_config.max_len
     )
 
     discriminator = ReformerLM(
-        num_tokens=20000,
-        emb_dim=128,
-        dim=1024,
-        dim_head=64,
-        heads=16,
-        depth=12,
-        ff_mult=4,
-        max_seq_len=1024,
+        num_tokens=tokenizer.vocab_size,
+        emb_dim=disc_config.emb_dim,
+        dim=disc_config.dim,
+        dim_head=disc_config.dim_head,
+        heads=disc_config.heads,
+        depth=disc_config.depth,
+        ff_mult=disc_config.ff_mult,
+        max_seq_len=화,
         return_embeddings=True
     )
-    # (2) weight tie the token and positional embeddings of generator and discriminator
-
+    # 4.2 weight tie the token and positional embeddings of generator and discriminator
+    # 제너레이터와 디스크리미네이터의 토큰, 포지션 임베딩을 공유한다(tie).
     generator.token_emb = discriminator.token_emb
     generator.pos_emb = discriminator.pos_emb
     # weight tie any other embeddings if available, token type embeddings, etc.
+    # 다른 임베딩 웨이트도 있다면 공유 필요.
 
-    # (3) instantiate electra
-
-    discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(1024, 1))
+    # 4.3 instantiate electra
+    # 엘렉트라 모델 초기화
+    discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(train_config.max_len, 1))
 
     model = Electra(
         generator,
@@ -248,16 +256,16 @@ if __name__ == '__main__':
         mask_prob = 0.15,           # masking probability for masked language modeling
         mask_ignore_token_ids = [3]  # ids of tokens to ignore for mask modeling ex. (cls, sep)
     )
-    trainer = ElectraTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size)
+    trainer = ElectraTrainer(dataset, model, tokenizer, train_config.max_len, train_batch_size=train_config.batch_size, eval_batch_size=train_config.batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
-    model = trainer.train(epochs=epochs,
+    model = trainer.train(epochs=train_config.epochs,
                           train_dataloader=train_dataloader,
                           eval_dataloader=eval_dataloader,
-                          log_steps=log_steps,
-                          ckpt_steps=ckpt_steps,
-                          ckpt_dir= checkpoint_dir,
-                          gradient_accumulation_steps=gradient_accumulation_steps)
-
-    torch.save(model, checkpoint_path)
+                          log_steps=train_config.log_steps,
+                          ckpt_steps=train_config.ckpt_steps,
+                          ckpt_dir= train_config.checkpoint_dir,
+                          gradient_accumulation_steps=train_config.gradient_accumulation_steps)
+    # model save
+    torch.save(model, train_config.checkpoint_path)
 

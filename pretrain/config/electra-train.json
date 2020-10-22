@@ -10,10 +10,6 @@
 
   "max_len" : 5120,
   "batch_size" : 2,
-  "dim" : 512,
-  "depth" : 1,
-  "heads" : 16,
-  "causal" : true,
   "epochs" : 3,
   "log_steps" : 2,
   "ckpt_steps" : 100,
