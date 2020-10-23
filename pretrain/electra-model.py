@@ -49,7 +49,6 @@ class ElectraTrainer(object):
         if eval_batch_size is None:
             self.eval_batch_size = train_batch_size
 
-
         logging.basicConfig(filename=f'{log_dir}/electra-{datetime.now().date()}.log', level=logging.INFO)
 
     def build_dataloaders(self, train_test_split=0.1, train_shuffle=True, eval_shuffle=True):
@@ -174,13 +173,13 @@ class ElectraTrainer(object):
                                 leave=True,
                                 total=len(dataloader),
                                 bar_format='{l_bar}{bar:10}{r_bar}'):
-            inputs, labels = batch
-            inputs, labels = inputs.to(self.device), labels.to(self.device)
+            input_data = batch
+            input_data = input_data.to(self.device)
 
             with torch.no_grad():
-                lm_logit, loss = self.model(inputs, labels)
+                output = self.model(input_data)
 
-            tmp_eval_loss = loss
+            tmp_eval_loss = output.loss
             tmp_perplexity = torch.exp(tmp_eval_loss)
 
             if self.n_gpu > 1:
@@ -208,7 +207,7 @@ if __name__ == '__main__':
     tokenizer = BertTokenizer(vocab_file=train_config.vocab_path, do_lower_case=False)
 
     # 3. Dataset
-    dataset = ElectraDataset(tokenizer, train_config.max_len, dir_path=train_config.data_path)
+    dataset = ElectraDataset(tokenizer, train_config.max_len, data_path=train_config.data_path)
 
     # 4. Electra Model
     # 4.1. instantiate the generator and discriminator,
@@ -234,8 +233,9 @@ if __name__ == '__main__':
         heads=disc_config.heads,
         depth=disc_config.depth,
         ff_mult=disc_config.ff_mult,
-        max_seq_len=화,
-        return_embeddings=True
+        max_seq_len=train_config.max_len,
+        return_embeddings=True,
+        weight_tie_embedding=True
     )
     # 4.2 weight tie the token and positional embeddings of generator and discriminator
     # 제너레이터와 디스크리미네이터의 토큰, 포지션 임베딩을 공유한다(tie).
@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
     # 4.3 instantiate electra
     # 엘렉트라 모델 초기화
-    discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(train_config.max_len, 1))
+    discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(1024, 1))
 
     model = Electra(
         generator,

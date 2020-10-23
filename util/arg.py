@@ -11,14 +11,14 @@ class ModelConfig:
     self.config_json = json.load(f)
     self.arg = Arg(**self.config_json)
 
-  def get_configs(self):
+  def get_config(self):
     return self.arg
 
 class ElectraConfig(ModelConfig):
   def __init__(self,config_path = '../pretrain/config/electra-train.json'):
     super().__init__(config_path)
 
-  def get_configs(self):
+  def get_config(self):
     paths = [self.arg.generator_config_path, self.arg.discriminator_config_path]
 
     def arg(path):
