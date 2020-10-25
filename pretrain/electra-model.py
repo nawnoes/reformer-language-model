@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
     # 4.3 instantiate electra
     # 엘렉트라 모델 초기화
-    discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(1024, 1))
+    discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(disc_config.dim, 1))
 
     model = Electra(
         generator,
