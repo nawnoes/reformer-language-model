@@ -2,7 +2,7 @@
   "vocab_path" : "../data/wpm-vocab-all.txt",
   "mini_data_path" :"../data/mini_namuwiki.txt",
   "data_path" :"../data/electra/" ,
-  "checkpoint_dir" : "../checkpoints",
+  "checkpoint_path" : "../checkpoints",
   "checkpoint_filename" : "electra_reformer.bin",
 
   "generator_config_path": "../pretrain/config/generator.json",
