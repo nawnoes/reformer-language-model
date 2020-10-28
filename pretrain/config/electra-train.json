@@ -4,10 +4,8 @@
   "data_path" :"../data/electra/" ,
   "checkpoint_path" : "../checkpoints",
   "checkpoint_filename" : "electra_reformer.bin",
-
   "generator_config_path": "../pretrain/config/generator.json",
   "discriminator_config_path": "../pretrain/config/discriminator.json",
-
   "max_len" : 5120,
   "batch_size" : 2,
   "epochs" : 30,
