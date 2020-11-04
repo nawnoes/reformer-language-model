@@ -3,8 +3,6 @@ warnings.filterwarnings("ignore")
 import sys
 sys.path.append('../')
 
-import re
-import argparse
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
@@ -156,8 +154,6 @@ class ElectraTrainer(object):
         return self.model
 
     def evaluate(self, dataloader):
-        loss_fn = nn.CrossEntropyLoss()
-
         if self.n_gpu > 1 and not isinstance(self.model, nn.DataParallel):
             self.model = nn.DataParallel(self.model)
 
