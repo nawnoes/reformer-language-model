@@ -175,13 +175,51 @@ class ReformerLM(nn.Module):
 |Korquad v1.0|56.8|84.96|
 
 예상보다 `exact_match` 부분에서 성능이 좋지 않게 나왔다. 생각해볼수 있는 개선 사항으로는
-- 모델의 크기 증가 안
+- 모델의 크기 증가
 - 학습데이터에서 [CLS]와 [SEP] 토큰을 넣어주지 않은것
 - Segment Embedding을 사용하지 않은것 
 
 ### 2. Auto Regressive(ex. GPT 계열)
-텍스트 생성을 위한 reformer decoder language model. auto regressive 방식으로 학습.
+Reformer Decoder를 이용한 Auto regressive language model.
 ![](./images/reformer-autoregressive.png)
+##### 모델 크기
+GPT-3 Small 과 동일한 모델 크기. **입력 토큰 수를 5120** 기존 모델들 대비 증가.
+|Model Name|layer|d_model|n_head|batchsize|learning rate| n_params|
+|----------|:---:|:-----:|:----:|:-------:|:-----------:|:-------:|
+|GPT-3 Samll  |12|768 |12|64|0.5M|6.0 x 10^-4|125M|
+|GPT-3 Medium |24|1024|16|65|0.5M|3.0 x 10^-4|350M|
+##### 모델
+```python
+class ReformerAutoRegressiveModel(nn.Module):
+    def __init__(self, num_tokens, dim, depth, max_seq_len, heads, causal=True):
+        super().__init__()
+        self.reformer = ReformerLM(
+                num_tokens= num_tokens,
+                dim= dim,
+                depth= depth,
+                heads= heads,
+                max_seq_len= max_seq_len,
+                causal= causal,           # auto-regressive 학습을 위한 설정
+                return_embeddings=True    # reformer 임베딩을 받기 위한 설정
+            )
+        self.lm_head = nn.Linear(dim, num_tokens, bias=False)
+
+    def forward(self,input_ids=None,labels=None,**kwargs):
+        reformer_outputs = self.reformer(input_ids,**kwargs)
+        hidden_states = reformer_outputs
+
+        lm_logits = self.lm_head(hidden_states)
+
+        loss = None
+        if labels is not None:
+            # Shift so that tokens < n predict n
+            shift_logits = lm_logits[..., :-1, :].contiguous()
+            shift_labels = labels[..., 1:].contiguous()
+            # Flatten the tokens
+            loss_fct = CrossEntropyLoss()
+            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+        return lm_logits,loss
+```
 
 ### 3. Replaced Token Detention(ex. ELECTRA)
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
