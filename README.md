@@ -99,10 +99,11 @@ print('문장 디코딩: ',decoded_str)
 도라 브라이언 등이 주연으로 출연하였고 토니 리차드슨 등이 제작에 참여하였다.
 ```
 
-## 🖥 학습 서버
+## 🖥 GPU
 nipa 정보통신진흥원 GPU 자원
 - GPU 할당량: 10TF
 - GPU 카드: RTX6000
+- GPU RAM: 24G
 
 ## 🏭 Language Model 
 
