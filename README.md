@@ -184,7 +184,7 @@ Reformer Decoder를 이용한 Auto regressive language model.
 ![](./images/reformer-autoregressive.png)
 ##### 모델 크기
 GPT-3 Small 과 동일한 모델 크기. **입력 토큰 수를 5120** 기존 모델들 대비 증가.
-|Model Name|layer|d_model|n_head|batchsize|learning rate| n_params|
+|Model Name|layer|d_model|n_head|d_head|batchsize|learning rate| n_params|
 |----------|:---:|:-----:|:----:|:-------:|:-----------:|:-------:|
 |GPT-3 Samll  |12|768 |12|64|0.5M|6.0 x 10^-4|125M|
 |GPT-3 Medium |24|1024|16|65|0.5M|3.0 x 10^-4|350M|
