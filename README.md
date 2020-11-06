@@ -112,7 +112,8 @@ nipa 정보통신진흥원 GPU 자원
 ## 🏭 Language Model 
 
 ### 1. Masked Language Model(ex. BERT without NSP,SOP..) 
-BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP는 제외 하여 학습 진행.
+BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습 진행.
+![](./images/refomer-mlm.png)
 #### 모델 설정
 ##### BERT Model Config
 |   |H=128|H=256|H=512|H=768|
@@ -146,7 +147,6 @@ causal = False
 
 #### 모델
 [reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)를 사용한 MLM
-![](./images/refomer-mlm.png)
 ```python
 class ReformerLM(nn.Module):
     def __init__(self, num_tokens, dim, depth, max_seq_len, heads = 8, dim_head = None, bucket_size = 64, n_hashes = 4, ff_chunks = 100, attn_chunks = 1, causal = False, weight_tie = False, lsh_dropout = 0., ff_dropout = 0., ff_mult = 4, ff_activation = None, ff_glu = False, post_attn_dropout = 0., layer_dropout = 0., random_rotations_per_head = False, twin_attention = False, use_scale_norm = False, use_rezero = False, use_full_attn = False, full_attn_thres = 0, reverse_thres = 0, num_mem_kv = 0, one_value_head = False, emb_dim = None, return_embeddings = False, weight_tie_embedding = False, fixed_position_emb = False, absolute_position_emb = False, axial_position_shape = None, n_local_attn_heads = 0, pkm_layers = tuple(), pkm_num_keys = 128):
@@ -185,8 +185,9 @@ class ReformerLM(nn.Module):
 - Segment Embedding을 사용하지 않은것 
 
 ### 2. Auto Regressive(ex. GPT 계열)
-![](https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRwoAurfiM2WIfF9tzx40wo9PcsHxpa0t_dCQ&usqp=CAU)
-##### 진행중..🚛
+텍스트 생성을 위한 reformer decoder language model. auto regressive 방식으로 학습.
+![](./images/reformer-autoregressive.png)
+
 ### 3. Replaced Token Detention(ex. ELECTRA)
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 ##### 진행중..🚒
