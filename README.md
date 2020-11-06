@@ -113,8 +113,19 @@ nipa 정보통신진흥원 GPU 자원
 
 ### 1. Masked Language Model(ex. BERT without NSP,SOP..) 
 BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP는 제외 하여 학습 진행.
-![](https://paper-attachments.dropbox.com/s_972195A84441142620E4C92312EA63C9665C3A86AFFD1D713034FA568ADFC5F9_1555424126367_BERT-language-modeling-masked-lm.png)
 #### 모델 설정
+##### BERT Model Config
+|   |H=128|H=256|H=512|H=768|
+|---|:---:|:---:|:---:|:---:|
+| **L=2**  |[**2/128 (BERT-Tiny)**]|[2/256]|[2_512]|[2_768]|
+| **L=4**  |[4/128]|[**4/256 (BERT-Mini)**]|[**4/512 (BERT-Small)**]|[4/768]|
+| **L=6**  |[6/128]|[6/256]|[6/512]|[6/768]|
+| **L=8**  |[8/128]|[8/256]|[**8/512 (BERT-Medium)**]|[8/768]|
+| **L=10** |[10/128]|[10/256]|[10/512]|[10/768]|
+| **L=12** |[12/128]|[12/256]|[12/512]|[**12/768 (BERT-Base)**]|
+
+##### Reformer MLM Config
+**BERT-Small** 과 **BERT-Medium**의 중간 크기
 ```
 # Model Hyperparameter
 max_len = 512     #전체 토큰 
@@ -163,14 +174,14 @@ class ReformerLM(nn.Module):
 ```
 #### Fine-Tuning Test 결과
 ##### Korquad v1.0
-생각보다 `exact_match` 부분에서 성능이 좋지 않게 나왔다. 생각해볼수 있는 원인으로는 
-- 첫번째, 학습데이터에서 [CLS]와 [SEP] 토큰을 넣어주지 않은것
-- 두번째, Segment Embedding을 사용하지 않은것
-등 을 원인으로 생각해볼 수 있다. 
-
 |Task| exact_match | f1 score|
 |------|---|---|
 |Korquad v1.0|56.8|84.96|
+
+예상보다 `exact_match` 부분에서 성능이 좋지 않게 나왔다. 생각해볼수 있는 개선 사항으로는
+- 모델의 크기 증가 안
+- 학습데이터에서 [CLS]와 [SEP] 토큰을 넣어주지 않은것
+- Segment Embedding을 사용하지 않은것 
 
 ### 2. Auto Regressive(ex. GPT 계열)
 ![](https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRwoAurfiM2WIfF9tzx40wo9PcsHxpa0t_dCQ&usqp=CAU)
