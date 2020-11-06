@@ -1,15 +1,14 @@
 import warnings
 warnings.filterwarnings("ignore")
 from transformers import BertTokenizer
-from fairseq.optim.adafactor import Adafactor
-import os
-import json
+
 import torch
 from model.autoregressive import ReformerAutoRegressiveModel
 from util.generate import top_k
 def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
     token_len = len(token_indices)
-    diff_len = max_length - token_len
+    remainder = token_len % max_length
+    diff_len = max_length - remainder
     result = token_indices + [pad_token_id]*diff_len
     return result
 
@@ -52,7 +51,7 @@ if __name__ =="__main__":
     )
     model.load_state_dict(torch.load(PATH,map_location=torch.device('cpu')))
 
-    sent = '인생의 불확실성이 주는 의미는'
+    sent = '1+1=2 [SEP] 3+4=7 [SEP] 50+60=110 [SEP] 34+24= '
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:
