@@ -87,9 +87,9 @@ print('문장 디코딩: ',decoded_str)
 - 주제 별로 한칸 개행.
 - 라인 별로 개행
 ```
-꿀맛행                 #라인 별 개행
-꿀맛은 다음을 의미한다.  #라인 별 개행
-                     #주제별 한칸 개행
+꿀맛행                 
+꿀맛은 다음을 의미한다.
+
 쿠로야나기 료
 《쿠로야나기 료》는 《따끈따끈 베이커리》에 등장하는 등장인물으로, 투니버스판 이름은 최강기. 성우는 코야스 타케히토, 최재호
 
@@ -189,6 +189,14 @@ GPT-3 Small 과 동일한 모델 크기. **입력 토큰 수를 5120** 기존 �
 |----------|:---:|:-----:|:----:|:----:|:-------:|:-----------:|:-------:|
 |GPT-3 Samll  |12|768 |12|64|0.5M|6.0 x 10^-4|125M|
 |GPT-3 Medium |24|1024|16|65|0.5M|3.0 x 10^-4|350M|
+
+```text
+max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) == 0 이어야한다.
+dim = 768
+depth = 12
+heads = 12
+causal = True # True for ReformerLM Auto Regressive,
+```
 ##### 모델
 ```python
 class ReformerAutoRegressiveModel(nn.Module):
@@ -226,6 +234,7 @@ class ReformerAutoRegressiveModel(nn.Module):
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 ##### 진행중..🚒
 
- 
+
  ## Reformer-pytorch
+[lucidrains/reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)의 reformer 사용.
  - `ReformerLM`의 **return_embeddings**은 reformer의 결과 값만 받고 싶은경우 설정
