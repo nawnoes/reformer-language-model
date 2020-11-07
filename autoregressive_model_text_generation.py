@@ -1,10 +1,11 @@
 import warnings
 warnings.filterwarnings("ignore")
-from transformers import BertTokenizer
 
+from transformers import BertTokenizer
 import torch
 from model.autoregressive import ReformerAutoRegressiveModel
 from util.generate import top_k
+
 def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
     token_len = len(token_indices)
     remainder = token_len % max_length
@@ -65,7 +66,7 @@ if __name__ =="__main__":
       gen = tokenizer.decode(top_k_sample).replace(' ','')
       if gen == '[SEP]':
           pass
-          # break
+
       if '##'in gen:
         sent += gen.replace('##','')
       else:
