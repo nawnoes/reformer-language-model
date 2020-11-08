@@ -3,22 +3,21 @@ warnings.filterwarnings("ignore")
 import sys
 sys.path.append('../')
 
-import re
 import argparse
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import DataLoader, random_split
 
 from tqdm import tqdm
 
-from reformer_pytorch import Reformer, ReformerLM
-from transformers import BertTokenizer, PreTrainedTokenizer
+from reformer_pytorch import ReformerLM
+from transformers import BertTokenizer
 from fairseq.optim.adafactor import Adafactor
 import os
 import json
 import logging
 from datetime import datetime
-from dataloader.wiki import NamuWikiDataset, NamuWikiDatasetForMLM
+from dataloader.wiki import NamuWikiDatasetForMLM
 
 class ReformerTrainer(object):
     def __init__(self,
@@ -329,7 +328,6 @@ if __name__ == '__main__':
 
 
     dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=data_path)
-    # dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=data_path)
 
     model = ReformerLM(
         num_tokens=tokenizer.vocab_size,

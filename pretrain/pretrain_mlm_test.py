@@ -3,20 +3,17 @@ warnings.filterwarnings("ignore")
 import sys
 sys.path.append('../')
 
-import re
-import argparse
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import DataLoader
 from tqdm import tqdm
-from reformer_pytorch import Reformer, ReformerLM
-from transformers import BertTokenizer, PreTrainedTokenizer
+from reformer_pytorch import ReformerLM
+from transformers import BertTokenizer
 from fairseq.optim.adafactor import Adafactor
 import os
-import json
 import logging
 from datetime import datetime
-from dataloader.wiki import NamuWikiDataset, NamuWikiDatasetForMLM
+from dataloader.wiki import NamuWikiDatasetForMLM
 
 class ReformerTester(object):
     def __init__(self,
@@ -61,6 +58,7 @@ class ReformerTester(object):
     def build_dataloaders(self, train_test_split=0.1, train_shuffle=True, eval_shuffle=True):
         train_loader = DataLoader(self.dataset, batch_size=self.train_batch_size, shuffle=train_shuffle)
         return train_loader
+
     def test(self,
               epochs,
               train_dataloader,
@@ -188,7 +186,7 @@ if __name__ == '__main__':
         depth=depth,
         heads=heads,
         max_seq_len=max_len,
-        causal=causal # auto-regressive 학습을 위한 설정
+        causal=causal
     )
     tester = ReformerTester(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size, pretrained_checkpoint_path=pretrained_checkpoint_path,)
     train_dataloader = tester.build_dataloaders(train_test_split=0)
