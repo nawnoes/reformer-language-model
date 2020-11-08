@@ -52,7 +52,7 @@ if __name__ =="__main__":
     )
     model.load_state_dict(torch.load(PATH,map_location=torch.device('cpu')))
 
-    sent = '1+1=2 [SEP] 3+4=7 [SEP] 50+60=110 [SEP] 34+24= '
+    sent = '디자인은 어떻게 보이고 느껴지냐의 문제만은 아닙니다. 디자인은 어떻게 기능하냐의 문제입니다.'
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:

@@ -230,7 +230,7 @@ class ReformerAutoRegressiveModel(nn.Module):
         return lm_logits,loss
 ```
 
-### 3. Replaced Token Detention(ex. ELECTRA)
+### 3. Replaced Token Detection(ex. ELECTRA)
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 ##### 진행중..🚒
 
