@@ -6,14 +6,14 @@
 `Axial Positional Encodings`을 통해서 트랜스포머의 단점을 개선한 모델. 
 
 ### Transformer의 단점
-    - attention 계산: 길이 $L$을 가진 문장의 어텐션을 계산할 때, $O(L^2)$의 메모리와 시간 복잡도를 가진다.
-    - 많은 수의 레이어: $N$개의 레이어틑 $N$배의 많은 메모리를 사용한다. 그리고 각각의 레이어는 역전파 계산을 위해 그 값들을 저장해둔다.
-    - Feed Forward 레이어의 크기: Feed Forward 레이어가 Attention의 Activation 깊이 보다 더 클 수 있다. 
+- attention 계산: 길이 $L$을 가진 문장의 어텐션을 계산할 때, $O(L^2)$의 메모리와 시간 복잡도를 가진다.
+- 많은 수의 레이어: $N$개의 레이어틑 $N$배의 많은 메모리를 사용한다. 그리고 각각의 레이어는 역전파 계산을 위해 그 값들을 저장해둔다.
+- Feed Forward 레이어의 크기: Feed Forward 레이어가 Attention의 Activation 깊이 보다 더 클 수 있다. 
 ### Reformer
-    - LSH
-    - RevNet
-    - Chunk
-    - Axial Positional Encoding
+- LSH
+- RevNet
+- Chunk
+- Axial Positional Encoding
 ### Reformer-pytorch
 [lucidrains/reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)의 reformer 사용.
 
