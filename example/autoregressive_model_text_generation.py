@@ -15,11 +15,7 @@ def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
 
 if __name__ =="__main__":
     wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
-    PATH= "../checkpoints/autoregressive_model_state_dict.pt"
-    # dir_path ="/" # 2020-08-30 kowiki data path
-
-    checkpoint_dir = "../checkpoints"
-    checkpoint_path = f'{checkpoint_dir}/autoregressive_reformer.bin'
+    PATH= "../checkpoints/1m_step_autoregressive_model_state_dict.pt"
 
     # Model Hyperparameter
     """
@@ -35,12 +31,6 @@ if __name__ =="__main__":
     causal = True # True for Auto Regressive,
 
     # Train Hyperparameter
-    epochs = 3
-    log_steps = 2
-    ckpt_steps = 100
-    ckpt_dir = checkpoint_path
-    gradient_accumulation_steps = 1
-
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
     model = ReformerAutoRegressiveModel(
@@ -52,7 +42,7 @@ if __name__ =="__main__":
     )
     model.load_state_dict(torch.load(PATH,map_location=torch.device('cpu')))
 
-    sent = '디자인은 어떻게 보이고 느껴지냐의 문제만은 아닙니다. 디자인은 어떻게 기능하냐의 문제입니다.'
+    sent = '단순함을 얻기란 복잡함을 얻기보다 어렵습니다. 무언가를 단순하게 만들기 위해서는 생각을 깔끔히 정리해야 합니다. '
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:
