@@ -251,10 +251,15 @@ class ReformerAutoRegressiveModel(nn.Module):
             loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
         return lm_logits,loss
 ```
+##### Pretraining
+학습 도중 서버 중지로 학습 중지.
+![](./images/autoregressive_train_losses.png)
 
 ### 3. Replaced Token Detection(ex. ELECTRA)
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 ##### 진행중..🚒
  
  # References
- - https://colab.research.google.com/drive/1MYxvC4RbKeDzY2lFfesN-CvPLKLk00CQ
+ - [The Reformer - Pushing the limits of language modeling](https://colab.research.google.com/drive/1MYxvC4RbKeDzY2lFfesN-CvPLKLk00CQ)
+ - [reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)
+ - [나만의 BERT Wordpiece Vocab 만들기](https://monologg.kr/2020/04/27/wordpiece-vocab/)
