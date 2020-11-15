@@ -207,6 +207,7 @@ Reformer Decoder를 이용한 Auto regressive language model.
 ![](./images/reformer-autoregressive.png)
 ##### 모델 크기
 GPT-3 Small 과 동일한 모델 크기. **입력 토큰 수를 5120** 기존 모델들 대비 증가.
+
 |Model Name|layer|d_model|n_head|d_head|batchsize|learning rate| n_params|
 |----------|:---:|:-----:|:----:|:----:|:-------:|:-----------:|:-------:|
 |GPT-3 Samll  |12|768 |12|64|0.5M|6.0 x 10^-4|125M|
@@ -252,7 +253,7 @@ class ReformerAutoRegressiveModel(nn.Module):
         return lm_logits,loss
 ```
 ##### Pretraining
-학습 도중 서버 중지로 학습 중지.
+1052199 step 학습 도중 서버 중지로 학습 중지.
 ![](./images/autoregressive_train_losses.png)
 
 ### 3. Replaced Token Detection(ex. ELECTRA)

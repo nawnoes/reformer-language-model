@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import json
 
+# 라인그래프를 그리기 위한 함수
 def print_json_line_graph(json_path):
   f = open(json_path, 'r')
   json_data = json.load(f)
@@ -13,11 +14,6 @@ def print_json_line_graph(json_path):
   plt.ylabel('loss')
   plt.title('Model Losses')
   plt.show()
+
 if __name__=='__main__':
   print_json_line_graph('../logs/autoregressive_train_results.json')
-
-
-"""
-참고
-https://bcho.tistory.com/1201
-"""

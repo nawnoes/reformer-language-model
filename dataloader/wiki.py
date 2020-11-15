@@ -174,6 +174,7 @@ class WikiDatasetForAutoRegressive(Dataset):
         labels= labels.squeeze()
 
         return inputs, labels
+
 class DatasetForAutoRegressive(Dataset):
     def __init__(self, tokenizer, max_len, dir_path):
         logging.info('Start pretraining data load!')
