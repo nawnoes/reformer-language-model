@@ -17,7 +17,7 @@ import os
 import json
 import logging
 from datetime import datetime
-from dataloader.wiki import DatasetForAutoRegressive
+from dataloader.dataset import DatasetForAutoRegressive
 from model.autoregressive import ReformerAutoRegressiveModel
 
 class ReformerTrainer(object):

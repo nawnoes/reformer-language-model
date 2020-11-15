@@ -14,8 +14,8 @@ def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
     return result
 
 if __name__ =="__main__":
-    wordpiece_vocab_path = "./data/wpm-vocab-all.txt"
-    PATH= "./checkpoints/autoregressive_model_state_dict.pt"
+    wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
+    PATH= "../checkpoints/autoregressive_model_state_dict.pt"
     # dir_path ="/" # 2020-08-30 kowiki data path
 
     checkpoint_dir = "../checkpoints"

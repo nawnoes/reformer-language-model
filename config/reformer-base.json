@@ -1,7 +1,0 @@
-{
-  "max_len": 1024,
-  "batch_size":4,
-  "dim":512,
-  "depth":12,
-  "heads":8
-}

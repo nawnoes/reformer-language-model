@@ -17,7 +17,7 @@ import os
 import json
 import logging
 from datetime import datetime
-from dataloader.wiki import NamuWikiDatasetForMLM
+from dataloader.dataset import DatasetForMLM
 
 class ReformerTrainer(object):
     def __init__(self,
@@ -276,7 +276,7 @@ def main():
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
     # dataset = NamuWikiDataset(tokenizer, max_len, path=mini_data_path)
-    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=mini_data_path)
+    dataset = DatasetForMLM(tokenizer, max_len, path=mini_data_path)
 
     model = ReformerLM(
         num_tokens=tokenizer.vocab_size,
@@ -327,7 +327,7 @@ if __name__ == '__main__':
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
 
 
-    dataset = NamuWikiDatasetForMLM(tokenizer, max_len, path=data_path)
+    dataset = DatasetForMLM(tokenizer, max_len, path=data_path)
 
     model = ReformerLM(
         num_tokens=tokenizer.vocab_size,

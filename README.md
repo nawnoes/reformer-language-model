@@ -259,6 +259,8 @@ class ReformerAutoRegressiveModel(nn.Module):
 ### 3. Replaced Token Detection(ex. ELECTRA)
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 ##### 진행중..🚒
+
+
  
  # References
  - [The Reformer - Pushing the limits of language modeling](https://colab.research.google.com/drive/1MYxvC4RbKeDzY2lFfesN-CvPLKLk00CQ)

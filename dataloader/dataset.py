@@ -72,7 +72,7 @@ class NamuWikiDataset(Dataset):
     def __getitem__(self, idx):
         return self.docs[idx]
 
-class NamuWikiDatasetForMLM(Dataset):
+class DatasetForMLM(Dataset):
     def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
         logging.info('start wiki data load')
 
