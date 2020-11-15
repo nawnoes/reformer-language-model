@@ -185,6 +185,12 @@ class ReformerLM(nn.Module):
         x = self.reformer(x, **kwargs)
         return self.out(x)
 ```
+
+#### Pretraining Result
+1. Eval Losses
+![](./images/mlm_eval_losses.png)
+1. Eval Perplexity
+![](./images/mlm_eval_perplexity.png)
 #### Fine-Tuning Test 결과
 ##### Korquad v1.0
 |Task| exact_match | f1 score|
