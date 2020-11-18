@@ -75,7 +75,6 @@ class ElectraTrainer(object):
               ckpt_dir=None,
               gradient_accumulation_steps=1):
         optimizer = Adafactor(self.model.parameters())
-        loss_fn = nn.CrossEntropyLoss()
         losses = {}
         global_steps = 0
         local_steps = 0
