@@ -10,9 +10,11 @@
 - 많은 수의 레이어: **N**개의 레이어틑 **N**배의 많은 메모리를 사용한다. 그리고 각각의 레이어는 역전파 계산을 위해 그 값들을 저장해둔다.
 - Feed Forward 레이어의 크기: Feed Forward 레이어가 Attention의 Activation 깊이 보다 더 클 수 있다. 
 ### Reformer
-- LSH
-- RevNet
-- Chunk
+- LSH(Local Sensitive Hashing): Dot-Product 사용하는 기존의 어텐션을 locality-sensitive hashing을 사용해 대체하면 기존의 O(L^2)을
+O(L log(L))로 개선
+- RevNet: 트랜스포머에서는 Residual Network에서 backpropagation를 위해 gradient 값을 저장하고 있다. reversible residual network을 이용하여
+메모리 문제를 계산 문제로 바꾸어 메모리를 문제를 개 
+- Chunk: Feed
 - Axial Positional Encoding
 ### Reformer-pytorch
 [lucidrains/reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)의 reformer 사용.
