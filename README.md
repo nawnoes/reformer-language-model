@@ -13,9 +13,9 @@
 - LSH(Local Sensitive Hashing): Dot-Product 사용하는 기존의 어텐션을 locality-sensitive hashing을 사용해 대체하면 기존의 O(L^2)을
 O(L log(L))로 개선
 - RevNet: 트랜스포머에서는 Residual Network에서 backpropagation를 위해 gradient 값을 저장하고 있다. reversible residual network을 이용하여
-메모리 문제를 계산 문제로 바꾸어 메모리를 문제를 개 
-- Chunk: Feed
-- Axial Positional Encoding
+메모리 문제를 계산 문제로 바꾸어 메모리를 문제를 개선
+- Chunk: Feed Forward layer의 각 부분은 위치와 관계 없이 독립적이기 때문에 청크 단위로 잘라서 계산할 수 있다. 이 점을 이용하여 메모리에 올릴 때 청크 단위로 메모리에 올려, 메모리 효율을 개선. 
+- Axial Positional Encoding: 매우 큰 input sequence에 대해서도 positional encoding을 사용할 수 있게 하는 방법. 
 ### Reformer-pytorch
 [lucidrains/reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)의 reformer 사용.
 
