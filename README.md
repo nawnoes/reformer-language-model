@@ -3,7 +3,7 @@
 
 ## Reformer
 2020년에 발표 된 모델로, `LSH(Local Sensitive Hashing)`, `RevNet(Reversivle Residual Network)`, `Chunked Feed Forward Layer`,
-`Axial Positional Encodings`을 통해서 트랜스포머의 메모리 문제를 개선하고자 시도한 모델. 
+`Axial Positional Encodings`을 통해서 트랜스포머의 메모리 문제를 개선하고자 시도 모델. 
 
 ### Transformer의 단점
 - attention 계산: 길이 **L**을 가진 문장의 어텐션을 계산할 때, **O(L^2)** 의 메모리와 시간 복잡도를 가진다.
@@ -299,4 +299,5 @@ class ReformerAutoRegressiveModel(nn.Module):
  # References
  - [The Reformer - Pushing the limits of language modeling](https://colab.research.google.com/drive/1MYxvC4RbKeDzY2lFfesN-CvPLKLk00CQ)
  - [reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)
+ - [electra-pytorch](https://github.com/lucidrains/electra-pytorch)
  - [나만의 BERT Wordpiece Vocab 만들기](https://monologg.kr/2020/04/27/wordpiece-vocab/)
