@@ -335,7 +335,7 @@ if __name__ == '__main__':
         depth=depth,
         heads=heads,
         max_seq_len=max_len,
-        causal=causal # auto-regressive 학습을 위한 설정
+        causal=causal # autoregressive 학습을 위한 설정
     )
     trainer = ReformerTrainer(dataset, model, tokenizer,max_len, train_batch_size=batch_size, eval_batch_size=batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)

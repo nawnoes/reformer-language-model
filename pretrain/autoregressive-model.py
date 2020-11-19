@@ -199,8 +199,7 @@ class ReformerTrainer(object):
 if __name__ == '__main__':
     wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
     mini_data_path ="../data/mini_namuwiki.txt"
-    dir_path ="../data/autoregressive/" # 2020-08-30 kowiki data path
-    # dir_path ="/" # 2020-08-30 kowiki data path
+    dir_path ="../data/autoregressive/"
 
     checkpoint_dir = "../checkpoints"
     checkpoint_path = f'{checkpoint_dir}/autoregressive_reformer.bin'
@@ -211,7 +210,7 @@ if __name__ == '__main__':
     GPT-3 samll     12         768           12        64         0.5M        6.0 x 10^-4       125M
     GPT-3 medium    24         1024          16        65         0.5M        3.0 x 10^-4       350M
     """
-    max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) ==0이어야함.
+    max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) == 0 이어야함.
     batch_size = 2
     dim = 512
     depth = 1
