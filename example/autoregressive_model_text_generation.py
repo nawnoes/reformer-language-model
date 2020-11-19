@@ -14,8 +14,8 @@ def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
     return result
 
 if __name__ =="__main__":
-    wordpiece_vocab_path = "data/wpm-vocab-all.txt"
-    PATH= "checkpoints/1m_step_autoregressive_model_state_dict.pt"
+    wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
+    PATH= "../checkpoints/1m_step_autoregressive_model_state_dict.pt"
 
     # Model Hyperparameter
     """
@@ -42,7 +42,7 @@ if __name__ =="__main__":
     )
     model.load_state_dict(torch.load(PATH, map_location=torch.device('cpu')))
 
-    sent = '단순함을 얻기란 복잡함을 얻기보다 어렵습니다. 무언가를 단순하게 만들기 위해서는 생각을 깔끔히 정리해야 합니다. '
+    sent = '무언가를 단순하게 만들기 위해서는 생각을 깔끔히 정리해야 합니다. '
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:
