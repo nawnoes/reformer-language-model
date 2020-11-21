@@ -47,11 +47,8 @@ def make_data_upto_maxlen( tokenizer, max_len, dir_path, file_name):
     data_file.close()
 
 if __name__ == '__main__':
-    wordpiece_vocab_path = "../data/vocab.txt"
-    wiki_data_path = "../data/kowiki_origin.txt"
-    # processed_wiki_data_path = "../data/processed_kowiki.txt"
-    processed_wiki_data_path2 = "../data/kowiki.txt"
-    test_path = "../data/mini_namuwiki.txt"
+    # vocab 경로
+    wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
 
     # 데이터 경로
     dir_path = "/Volumes/My Passport for Mac/00_nlp/PretrainingData/raw"
@@ -68,4 +65,4 @@ if __name__ == '__main__':
         if ".txt"in file_name :
             progress_bar.set_description(f'file name: {file_name}')
             full_file_path = f'{dir_path}/{file_name}'
-            make_data_upto_maxlen(tokenizer, 5000,dir_path,file_name)
+            make_data_upto_maxlen(tokenizer, 510,dir_path,file_name)

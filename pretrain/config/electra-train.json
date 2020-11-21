@@ -7,7 +7,7 @@
   "generator_config_path": "../pretrain/config/generator.json",
   "discriminator_config_path": "../pretrain/config/discriminator.json",
   "max_len" : 512,
-  "batch_size" : 2,
+  "batch_size" : 32,
   "epochs" : 30,
   "log_steps" : 2,
   "ckpt_steps" : 100,

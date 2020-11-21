@@ -195,6 +195,7 @@ class ElectraTrainer(object):
         return None
 
 if __name__ == '__main__':
+    torch.manual_seed(9)
     # 1. Config
     train_config, gen_config, disc_config = ElectraConfig().get_config()
 
@@ -259,7 +260,7 @@ if __name__ == '__main__':
                           eval_dataloader=eval_dataloader,
                           log_steps=train_config.log_steps,
                           ckpt_steps=train_config.ckpt_steps,
-                          ckpt_dir= train_config.checkpoint_dir,
+                          ckpt_dir= train_config.checkpoint_path,
                           gradient_accumulation_steps=train_config.gradient_accumulation_steps)
     # model save
     torch.save(model, train_config.checkpoint_path)

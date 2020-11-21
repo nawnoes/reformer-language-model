@@ -4,5 +4,5 @@
     "heads":4,
     "ff_mult":2,
     "dim_head":64,
-    "depth":2
+    "depth":12
 }
