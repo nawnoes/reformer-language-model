@@ -292,8 +292,14 @@ class ReformerAutoRegressiveModel(nn.Module):
 ``` 
 ### 3. Replaced Token Detection(ex. ELECTRA)
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
-##### 진행중..🚒
-
+##### 모델 
+## reformer-electra config
+|                   |               | Layers | Embedding Size | Hidden Size | # heads |
+| ----------------- | ------------: | -----: | -------------: | ----------: | ------: |
+| `KoELECTRA-Base`  | Discriminator |     12 |            768 |         768 |      12 |
+|                   |     Generator |     12 |            768 |         256 |       4 |
+##### Pretrain
+##### Fine-tuning
 
  
  # References
