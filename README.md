@@ -299,6 +299,9 @@ class ReformerAutoRegressiveModel(nn.Module):
 | `KoELECTRA-Base`  | Discriminator |     12 |            768 |         768 |      12 |
 |                   |     Generator |     12 |            768 |         256 |       4 |
 ##### Pretrain
+##### ELECTRA-BASE Graph
+- 1 epoch
+![](./images/electra_loss_graph_1_epoch.png)
 ##### Fine-tuning
 
  

@@ -16,4 +16,4 @@ def print_json_line_graph(json_path):
   plt.show()
 
 if __name__=='__main__':
-  print_json_line_graph('../logs/autoregressive_train_results.json')
+  print_json_line_graph('../logs/electra_train_results.json')
