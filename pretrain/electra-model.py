@@ -15,7 +15,7 @@ import os
 import json
 import logging
 from datetime import datetime
-from dataloader.electra import ElectraDataset
+from dataset.electra import ElectraDataset
 from electra_pytorch import Electra
 from reformer_pytorch import ReformerLM
 from util.arg import ElectraConfig

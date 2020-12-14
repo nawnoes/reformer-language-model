@@ -17,7 +17,7 @@ import os
 import json
 import logging
 from datetime import datetime
-from dataloader.dataset import DatasetForMLM
+from dataset.pretrain import DatasetForMLM
 
 class ReformerTrainer(object):
     def __init__(self,
