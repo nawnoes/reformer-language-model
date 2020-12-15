@@ -197,7 +197,7 @@ class ElectraTrainer(object):
 if __name__ == '__main__':
     torch.manual_seed(9)
     # 1. Config
-    train_config, gen_config, disc_config = ElectraConfig().get_config()
+    train_config, gen_config, disc_config = ElectraConfig(config_path='../config/electra-train.json').get_config()
 
     # 2. Tokenizer
     tokenizer = BertTokenizer(vocab_file=train_config.vocab_path, do_lower_case=False)
@@ -211,27 +211,26 @@ if __name__ == '__main__':
     # 제너레이터의 크기는 디스크리미네이터의 1/4~ 1/2 크기로
     # Generator
     generator = ReformerLM(
-        num_tokens=tokenizer.vocab_size,
+        num_tokens= tokenizer.vocab_size,
         emb_dim= gen_config.emb_dim,
-        dim=gen_config.emb_dim,  # smaller hidden dimension
-        heads=gen_config.heads,  # less heads
-        ff_mult=gen_config.ff_mult,  # smaller feed forward intermediate dimension
-        dim_head=gen_config.dim_head,
-        depth=gen_config.depth,
-        max_seq_len=train_config.max_len
+        dim= gen_config.emb_dim,  # smaller hidden dimension
+        heads= gen_config.heads,  # less heads
+        ff_mult= gen_config.ff_mult,  # smaller feed forward intermediate dimension
+        dim_head= gen_config.dim_head,
+        depth= gen_config.depth,
+        max_seq_len= train_config.max_len
     )
 
     discriminator = ReformerLM(
-        num_tokens=tokenizer.vocab_size,
-        emb_dim=disc_config.emb_dim,
-        dim=disc_config.dim,
-        dim_head=disc_config.dim_head,
-        heads=disc_config.heads,
-        depth=disc_config.depth,
-        ff_mult=disc_config.ff_mult,
-        max_seq_len=train_config.max_len,
+        num_tokens= tokenizer.vocab_size,
+        emb_dim= disc_config.emb_dim,
+        dim= disc_config.dim,
+        dim_head= disc_config.dim_head,
+        heads= disc_config.heads,
+        depth= disc_config.depth,
+        ff_mult= disc_config.ff_mult,
+        max_seq_len= train_config.max_len,
         return_embeddings=True,
-        weight_tie_embedding=True
     )
     # 4.2 weight tie the token and positional embeddings of generator and discriminator
     # 제너레이터와 디스크리미네이터의 토큰, 포지션 임베딩을 공유한다(tie).
@@ -247,10 +246,10 @@ if __name__ == '__main__':
     model = Electra(
         generator,
         discriminator_with_adapter,
-        mask_token_id = 2,          # the token id reserved for masking
-        pad_token_id = 0,           # the token id for padding
-        mask_prob = 0.15,           # masking probability for masked language modeling
-        mask_ignore_token_ids = [3]  # ids of tokens to ignore for mask modeling ex. (cls, sep)
+        mask_token_id = tokenizer.mask_token_id,           # the token id reserved for masking
+        pad_token_id = tokenizer.pad_token_id,             # the token id for padding
+        mask_prob = 0.15,                                  # masking probability for masked language modeling
+        mask_ignore_token_ids = tokenizer.all_special_ids  # ids of tokens to ignore for mask modeling ex. (cls, sep)
     )
     trainer = ElectraTrainer(dataset, model, tokenizer, train_config.max_len, train_batch_size=train_config.batch_size, eval_batch_size=train_config.batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)

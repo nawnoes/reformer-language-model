@@ -21,7 +21,7 @@ class ReformerMRCHead(nn.Module):
     return x
 
 class ReformerMRCModel(nn.Module):
-    def __init__(self, num_tokens, dim, depth, max_seq_len, heads, num_labels=2, causal=True):
+    def __init__(self, num_tokens, dim, depth, max_seq_len, heads, num_labels=2, causal=False):
         super().__init__()
         self.reformer = ReformerLM(
                 num_tokens= num_tokens,
