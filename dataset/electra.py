@@ -32,7 +32,7 @@ class ElectraDataset(Dataset):
         logging.info('Complete data load')
 
     def _tokenize_input_ids(self, input_ids: list, pad_to_max_length: bool = True):
-        inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=True, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt',truncation=True))
+        inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=False, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt',truncation=True))
         return inputs
 
     def _pad_token(self, inputs):
