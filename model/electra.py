@@ -197,6 +197,8 @@ class Electra(nn.Module):
     # get generator output and get mlm loss
     logits = self.generator(masked_input, **kwargs)
 
+    # nn.CrossEntropyLoss()(logits[mask_indices].view(-1,22000),gen_labels[mask_indices]) 일
+    # 위 함수로 loss를 해도 동일
     mlm_loss = F.cross_entropy(
       logits.transpose(1, 2),
       gen_labels,
