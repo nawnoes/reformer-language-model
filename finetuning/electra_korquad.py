@@ -12,11 +12,13 @@ from io import open
 
 import numpy as np
 import torch
+import torch.nn as nn
 from torch.utils.data import (DataLoader, RandomSampler,SequentialSampler, TensorDataset)
 from tqdm import tqdm, trange
 
 from reformer_pytorch import ReformerLM
 from util.arg import ElectraConfig
+from model.electra import Electra
 from model.electra_discriminator import DiscriminatorMRCModel
 from transformers.optimization import AdamW
 from util.schedule import WarmupLinearSchedule
@@ -87,18 +89,51 @@ train_config, gen_config, disc_config = ElectraConfig(config_path = config_path)
 # 2. Tokenizer
 tokenizer = BertTokenizer(vocab_file=train_config.vocab_path, do_lower_case=False)
 
-electra_discriminator = ReformerLM(
-  num_tokens=tokenizer.vocab_size,
-  # emb_dim=disc_config.emb_dim,
-  dim=disc_config.dim,
-  dim_head=disc_config.dim_head,
-  heads=disc_config.heads,
-  depth=disc_config.depth,
-  ff_mult=disc_config.ff_mult,
-  max_seq_len=train_config.max_len,
-  return_embeddings=True,
-  weight_tie_embedding=True
+# Generator
+generator = ReformerLM(
+    num_tokens= tokenizer.vocab_size,
+    emb_dim= gen_config.emb_dim,
+    dim= gen_config.emb_dim,  # smaller hidden dimension
+    heads= gen_config.heads,  # less heads
+    ff_mult= gen_config.ff_mult,  # smaller feed forward intermediate dimension
+    dim_head= gen_config.dim_head,
+    depth= gen_config.depth,
+    max_seq_len= train_config.max_len
 )
+
+discriminator = ReformerLM(
+    num_tokens= tokenizer.vocab_size,
+    emb_dim= disc_config.emb_dim,
+    dim= disc_config.dim,
+    dim_head= disc_config.dim_head,
+    heads= disc_config.heads,
+    depth= disc_config.depth,
+    ff_mult= disc_config.ff_mult,
+    max_seq_len= train_config.max_len,
+    return_embeddings=True,
+)
+# 4.2 weight tie the token and positional embeddings of generator and discriminator
+# 제너레이터와 디스크리미네이터의 토큰, 포지션 임베딩을 공유한다(tie).
+generator.token_emb = discriminator.token_emb
+generator.pos_emb = discriminator.pos_emb
+# weight tie any other embeddings if available, token type embeddings, etc.
+# 다른 임베딩 웨이트도 있다면 공유 필요.
+
+# 4.3 instantiate electra
+# 엘렉트라 모델 초기화
+discriminator_with_adapter = nn.Sequential(discriminator, nn.Linear(disc_config.dim, 1))
+
+electra = Electra(
+    generator,
+    discriminator_with_adapter,
+    mask_token_id = tokenizer.mask_token_id,           # the token id reserved for masking
+    pad_token_id = tokenizer.pad_token_id,             # the token id for padding
+    mask_prob = 0.15,                                  # masking probability for masked language modeling
+    mask_ignore_token_ids = tokenizer.all_special_ids  # ids of tokens to ignore for mask modeling ex. (cls, sep)
+)
+electra.load_state_dict(torch.load(train_config.checkpoint_path, map_location=device),strict=False)
+
+electra_discriminator = electra.discriminator[0]
 
 model = DiscriminatorMRCModel(discriminator=electra_discriminator,dim=disc_config.dim)
 
