@@ -303,7 +303,7 @@ class ReformerAutoRegressiveModel(nn.Module):
 - 1 epoch
 ![](./images/electra_loss_graph_1_epoch.png)
 ##### Fine-tuning
-
+1 epoch 진행 후 korquad에 대해 테스트
  
  # References
  - [The Reformer - Pushing the limits of language modeling](https://colab.research.google.com/drive/1MYxvC4RbKeDzY2lFfesN-CvPLKLk00CQ)
