@@ -10,11 +10,11 @@ import torch
 from tqdm import tqdm
 from transformers import BertTokenizer
 
-def make_data_upto_maxlen( tokenizer, max_len, dir_path, file_name):
+def make_data_under_maxlen( tokenizer, max_len, dir_path, file_name, empty_line = True):
     file_name = file_name.split('.')
     path = f'{dir_path}/{file_name[0]}.{file_name[1]}'
     return_file_path = f'{dir_path}/data/{file_name[0]}-{max_len}.{file_name[1]}'
-    logging.info('file name:'+return_file_path)
+    # logging.info('file name:'+return_file_path)
 
     return_file= open(return_file_path,'w',encoding='utf-8')
     docs = []
@@ -22,7 +22,7 @@ def make_data_upto_maxlen( tokenizer, max_len, dir_path, file_name):
     doc_len = 1
 
     num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
-    logging.info('file line number: '+str(num_lines))
+    # logging.info('file line number: '+str(num_lines))
     data_file = open(path, 'r')
 
     for line in tqdm(data_file,
@@ -31,7 +31,7 @@ def make_data_upto_maxlen( tokenizer, max_len, dir_path, file_name):
         line = line[:-1]
         line_len = len(tokenizer.encode(line))
         added_doc_len = doc_len +line_len
-        if line =="":
+        if empty_line and line =="":
             return_file.write(doc + "\n")
             doc = "[CLS] "
             doc_len = 1
@@ -51,7 +51,9 @@ if __name__ == '__main__':
     wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
 
     # 데이터 경로
-    dir_path = "/Volumes/My Passport for Mac/00_nlp/PretrainingData/raw"
+    # dir_path = "/Volumes/My Passport for Mac/00_nlp/PretrainingData/raw"
+    dir_path = "../data/novel"
+
 
     # 토크나이즈
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
@@ -60,9 +62,9 @@ if __name__ == '__main__':
     file_list = os.listdir(dir_path)
 
     # 목록 내에 json 파일 읽기
-    progress_bar = tqdm(file_list, position=1, leave=True)
+    progress_bar = tqdm(file_list, position=1)
     for file_name in progress_bar:
         if ".txt"in file_name :
             progress_bar.set_description(f'file name: {file_name}')
             full_file_path = f'{dir_path}/{file_name}'
-            make_data_upto_maxlen(tokenizer, 510,dir_path,file_name)
+            make_data_under_maxlen(tokenizer, 5120,dir_path,file_name,empty_line=False)

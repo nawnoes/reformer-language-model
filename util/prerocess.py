@@ -17,18 +17,22 @@ if __name__ =='__main__':
           full_file_path = f'{data_dir}/{file_name}'
           out_file_path =  f'{out_dir}/{file_name}'
           try:
-            read_f = open(full_file_path,'r',encoding='cp949')
+            read_f = open(full_file_path,'r',encoding='utf-8')
             write_f = open(out_file_path,'w',encoding='utf-8')
 
             while True:
               line = read_f.readline()
               if not line: break
-              write_f.write(line)
+              if line =='\n' or line == '  \n' or line == ' \n' or line == '    \n':
+                continue
+                # print(line)
+              write_f.write(line.strip()+'\n')
 
 
             read_f.close()
             write_f.close()
           except:
+            print('read_f error')
             continue
 
 
