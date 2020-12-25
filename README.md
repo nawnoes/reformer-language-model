@@ -200,9 +200,9 @@ class ReformerLM(nn.Module):
 |Korquad v1.0|56.8|84.96|
 
 예상보다 `exact_match` 부분에서 성능이 좋지 않게 나왔다. 생각해볼수 있는 개선 사항으로는
-- 모델의 크기 증가
-- 학습데이터에서 [CLS]와 [SEP] 토큰을 넣어주지 않은것
-- Segment Embedding을 사용하지 않은것 
+- 모델의 크기 키우는 방법
+- 학습 데이터를 증가시키는 방법. (kowiki 데이터만 학습시켰으므로)
+- 학습데이터에서 [CLS]와 [SEP] 토큰을 넣어주지 않은 부분 수정
 
 ### 2. Auto Regressive(ex. GPT 계열)
 Reformer Decoder를 이용한 Auto regressive language model.
@@ -294,22 +294,22 @@ class ReformerAutoRegressiveModel(nn.Module):
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 ##### 모델 
 ## reformer-electra config
-|                   |               | Layers | Embedding Size | Hidden Size | # heads |
-| ----------------- | ------------: | -----: | -------------: | ----------: | ------: |
-| `KoELECTRA-Base`  | Discriminator |     12 |            768 |         768 |      12 |
-|                   |     Generator |     12 |            768 |         256 |       4 |
+|                 |               | Layers | Embedding Size | Hidden Size | # heads |
+| --------------- | ------------: | -----: | -------------: | ----------: | ------: |
+| `ELECTRA-Base`  | Discriminator |     12 |            768 |         768 |      12 |
+|                 |     Generator |     12 |            768 |         256 |       4 |
 ##### Pretrain
 ##### ELECTRA-BASE Graph
 - 1 epoch
 ![](./images/electra_loss_graph_1_epoch.png)
 ##### Fine-tuning
 1 epoch 진행 후 korquad에 대해 테스트.
-###### 테스트방법
+###### 실행
 `finetuning/electra-korquad.ipynb` colab에서 실행
 ###### 결과
-|                | epoch | Exact Match(EM) |   F1   |
-| -------------- | ----: | --------------: | -----: |
-| KoELECTRA-Base |     1 |           71.88 |  95.49 |
+|                       | epoch | Exact Match(EM) |   F1   |
+| --------------------- | ----: | --------------: | -----: |
+| Reformer-ELECTRA-Base |     1 |           71.88 |  95.49 |
 
  
  # References
