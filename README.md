@@ -307,9 +307,9 @@ class ReformerAutoRegressiveModel(nn.Module):
 ###### 테스트방법
 `finetuning/electra-korquad.ipynb` colab에서 실행
 ###### 결과
-|                | epoch | Embedding Size | Hidden Size |
-| -------------- | ----: | -------------: | ----------: |
-| `KorQuAD 1.0`  |    5 |            768 |         768 |
+|                | epoch | Exact Match(EM) |   F1   |
+| -------------- | ----: | --------------: | -----: |
+| KoELECTRA-Base |     1 |           71.88 |  95.49 |
 
  
  # References
