@@ -1,8 +1,8 @@
 {
-  "vocab_path" : "./data/wpm-vocab-all.txt",
-  "checkpoint_path" : "./checkpoints/electra_model_state_dict.pt",
-  "generator_config_path": "./config/generator.json",
-  "discriminator_config_path": "./config/discriminator.json",
+  "vocab_path" : "src/data/wpm-vocab-all.txt",
+  "checkpoint_path" : "src/checkpoints/electra_model_state_dict.pt",
+  "generator_config_path": "src/config/generator.json",
+  "discriminator_config_path": "src/config/discriminator.json",
   "max_len" : 512,
   "batch_size" : 32,
   "epochs" : 30,

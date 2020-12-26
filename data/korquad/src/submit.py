@@ -21,16 +21,12 @@ from model.electra import Electra
 from model.electra_discriminator import DiscriminatorMRCModel
 from transformers import BertTokenizer
 from util.korquad_utils import (read_squad_examples, convert_examples_to_features, RawResult, write_predictions,evaluate)
-if sys.version_info[0] == 2:
-    import cPickle as pickle
-else:
-    import pickle
 
 
-MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-CHK_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/electra_korquad_14.bin")
-CONFIG_PATH = os.path.join(MODEL_PATH, "config/electra-korquad-finetuning.json")
-VOCAB_PATH = os.path.join(MODEL_PATH, "data/wpm-vocab-all.txt")
+SRC_PATH = os.path.dirname(os.path.abspath(__file__))
+CHK_PATH = os.path.join(SRC_PATH, "data/electra_korquad_14.bin")
+CONFIG_PATH = os.path.join(SRC_PATH, "config/electra-korquad-finetuning.json")
+VOCAB_PATH = os.path.join(SRC_PATH, "data/wpm-vocab-all.txt")
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
@@ -149,7 +145,7 @@ def main(input, output):
         input_mask = input_mask.to(device)
         segment_ids = segment_ids.to(device)
         with torch.no_grad():
-            batch_start_logits, batch_end_logits = model(input_ids, segment_ids, input_mask)
+            batch_start_logits, batch_end_logits = model(input_ids)
         for i, example_index in enumerate(example_indices):
             start_logits = batch_start_logits[i].detach().cpu().tolist()
             end_logits = batch_end_logits[i].detach().cpu().tolist()

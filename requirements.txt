@@ -3,3 +3,4 @@ transformers
 reformer_pytorch==1.1.3
 electra-pytorch
 kss
+fairseq==0.9.0

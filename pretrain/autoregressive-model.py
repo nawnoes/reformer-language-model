@@ -202,7 +202,6 @@ if __name__ == '__main__':
     dir_path ="../data/autoregressive/"
 
     checkpoint_dir = "../checkpoints"
-    checkpoint_path = f'{checkpoint_dir}/autoregressive_reformer.bin'
 
     # Model Hyperparameter
     """
@@ -221,7 +220,6 @@ if __name__ == '__main__':
     epochs = 3
     log_steps = 2
     ckpt_steps = 100
-    ckpt_dir = checkpoint_path
     gradient_accumulation_steps = 1
 
     tokenizer = BertTokenizer(vocab_file=wordpiece_vocab_path, do_lower_case=False)
@@ -246,4 +244,4 @@ if __name__ == '__main__':
                           ckpt_dir= checkpoint_dir,
                           gradient_accumulation_steps=gradient_accumulation_steps)
 
-    torch.save(model, checkpoint_path)
+    torch.save(model, f'{checkpoint_dir}/autoregressive_optimizer_state_dict.pt')

@@ -310,6 +310,7 @@ class ReformerAutoRegressiveModel(nn.Module):
 |                       | epoch | Exact Match(EM) |   F1   |
 | --------------------- | ----: | --------------: | -----: |
 | Reformer-ELECTRA-Base |     1 |           71.88 |  95.49 |
+| Reformer-ELECTRA-Base |     2 |           71.92 |  95.61 |
 
  
  # References
