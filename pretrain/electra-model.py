@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
 from transformers import BertTokenizer
+from transformers.optimization import AdamW
+
 from fairseq.optim.adafactor import Adafactor
 import os
 import json
@@ -19,7 +21,33 @@ from dataset.electra import ElectraDataset
 from electra_pytorch import Electra
 from reformer_pytorch import ReformerLM
 from util.arg import ElectraConfig
+from torch.optim.lr_scheduler import LambdaLR
 
+
+## optimizer
+
+def get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, last_epoch=-1):
+    def lr_lambda(current_step):
+        learning_rate = max(0.0, 1. - (float(current_step) / float(num_training_steps)))
+        learning_rate *= min(1.0, float(current_step) / float(num_warmup_steps))
+        return learning_rate
+
+    return LambdaLR(optimizer, lr_lambda, last_epoch)
+
+
+def get_params_without_weight_decay_ln(named_params, weight_decay):
+    no_decay = ['bias', 'LayerNorm.weight']
+    optimizer_grouped_parameters = [
+        {
+            'params': [p for n, p in named_params if not any(nd in n for nd in no_decay)],
+            'weight_decay': weight_decay,
+        },
+        {
+            'params': [p for n, p in named_params if any(nd in n for nd in no_decay)],
+            'weight_decay': 0.0,
+        },
+    ]
+    return optimizer_grouped_parameters
 
 class ElectraTrainer(object):
     def __init__(self,
@@ -68,13 +96,15 @@ class ElectraTrainer(object):
         return train_loader, eval_loader
     def train(self,
               epochs,
+              optimizer,
+              scheduler,
               train_dataloader,
               eval_dataloader,
               log_steps,
               ckpt_steps,
               ckpt_dir=None,
               gradient_accumulation_steps=1):
-        optimizer = Adafactor(self.model.parameters())
+        # optimizer = Adafactor(self.model.parameters())
         losses = {}
         global_steps = 0
         local_steps = 0
@@ -122,7 +152,9 @@ class ElectraTrainer(object):
                 global_steps += 1
 
                 if global_steps % gradient_accumulation_steps == 0:
+                    scheduler.step()
                     optimizer.step()
+                    optimizer.zero_grad()
                     self.model.zero_grad()
 
                 if global_steps % log_steps == 0:
@@ -138,8 +170,8 @@ class ElectraTrainer(object):
                     # self.evaluate(eval_dataloader)
                     # self.model.train()
                     model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
-                    torch.save(model_to_save.state_dict(), f'{ckpt_dir}/electra_model_state_dict.pt')
-                    torch.save(optimizer.state_dict(), f'{ckpt_dir}/electra_optimizer_state_dict.pt')
+                    torch.save(model_to_save.state_dict(), f'{ckpt_dir}/last_electra_model_state_dict.pt')
+                    torch.save(optimizer.state_dict(), f'{ckpt_dir}/last_electra_optimizer_state_dict.pt')
 
                     logging.info(f'{datetime.now()} | Saved checkpoint to: {ckpt_dir}')
             # Evaluate every epoch
@@ -147,8 +179,8 @@ class ElectraTrainer(object):
             self.model.train()
 
         model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
-        torch.save(model_to_save.state_dict(), f'{ckpt_dir}/electra_model_state_dict.pt')
-        torch.save(optimizer.state_dict(), f'{ckpt_dir}/electra_optimizer_state_dict.pt')
+        torch.save(model_to_save.state_dict(), f'{ckpt_dir}/last_electra_model_state_dict.pt')
+        torch.save(optimizer.state_dict(), f'{ckpt_dir}/last_electra_optimizer_state_dict.pt')
 
         return self.model
 
@@ -188,7 +220,7 @@ class ElectraTrainer(object):
             total_perplexity= perplexity/eval_steps
 
             logging.info(f'{datetime.now()} | Step: {step} | Eval Loss: {total_eval_loss} | Perplexity: {total_perplexity}')
-            with open(f'{self.log_dir}/electra_eval_results.txt', 'a+') as results_file:
+            with open(f'{self.log_dir}/last_electra_eval_results.txt', 'a+') as results_file:
                 results_file.write(f'{datetime.now()} | Step: {step} | Eval Loss: {total_eval_loss} | Perplexity: {total_perplexity}\n')
                 results_file.close()
 
@@ -251,10 +283,31 @@ if __name__ == '__main__':
         mask_prob = 0.15,                                  # masking probability for masked language modeling
         mask_ignore_token_ids = tokenizer.all_special_ids  # ids of tokens to ignore for mask modeling ex. (cls, sep)
     )
+
+
     trainer = ElectraTrainer(dataset, model, tokenizer, train_config.max_len, train_batch_size=train_config.batch_size, eval_batch_size=train_config.batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
+    # Prepare optimizer
+    num_train_optimization_steps = int(
+        len(train_dataloader) / train_config.batch_size / train_config.gradient_accumulation_steps)
+
+    warmup_steps = int(num_train_optimization_steps * 0.1)
+
+    param_optimizer = list(model.named_parameters())
+    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
+         'weight_decay': 0.01},
+        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+    ]
+    optimizer = AdamW(params=optimizer_grouped_parameters, lr=2e-4, eps=1e-8)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
+                                                num_training_steps=num_train_optimization_steps)
+
     model = trainer.train(epochs=train_config.epochs,
+                          optimizer = optimizer,
+                          scheduler = scheduler,
                           train_dataloader=train_dataloader,
                           eval_dataloader=eval_dataloader,
                           log_steps=train_config.log_steps,

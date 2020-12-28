@@ -1,6 +1,6 @@
 torch
 transformers
-reformer_pytorch==1.1.3
+reformer_pytorch==1.2.4
 electra-pytorch
 kss
 fairseq==0.9.0
