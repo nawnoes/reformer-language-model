@@ -10,8 +10,6 @@ from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
 from transformers import BertTokenizer
-from transformers.optimization import AdamW
-
 from fairseq.optim.adafactor import Adafactor
 import os
 import json
@@ -21,33 +19,6 @@ from dataset.electra import ElectraDataset
 from electra_pytorch import Electra
 from reformer_pytorch import ReformerLM
 from util.arg import ElectraConfig
-from torch.optim.lr_scheduler import LambdaLR
-
-
-## optimizer
-
-def get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps, last_epoch=-1):
-    def lr_lambda(current_step):
-        learning_rate = max(0.0, 1. - (float(current_step) / float(num_training_steps)))
-        learning_rate *= min(1.0, float(current_step) / float(num_warmup_steps))
-        return learning_rate
-
-    return LambdaLR(optimizer, lr_lambda, last_epoch)
-
-
-def get_params_without_weight_decay_ln(named_params, weight_decay):
-    no_decay = ['bias', 'LayerNorm.weight']
-    optimizer_grouped_parameters = [
-        {
-            'params': [p for n, p in named_params if not any(nd in n for nd in no_decay)],
-            'weight_decay': weight_decay,
-        },
-        {
-            'params': [p for n, p in named_params if any(nd in n for nd in no_decay)],
-            'weight_decay': 0.0,
-        },
-    ]
-    return optimizer_grouped_parameters
 
 class ElectraTrainer(object):
     def __init__(self,
@@ -55,18 +26,25 @@ class ElectraTrainer(object):
                  model,
                  tokenizer,
                  max_len,
+                 model_name,
+                 checkpoint_path,
                  device=None,
                  train_batch_size=8,
                  eval_batch_size=None,
+                 tb_writer=False,
+                 tb_dir='./tb_logs',
                  log_dir='../logs'):
         self.dataset = dataset
         self.model = model
         self.tokenizer = tokenizer
         self.max_len = max_len
+        self.model_name = model_name
+        self.checkpoint_path = checkpoint_path
         self.device = device
         self.n_gpu = torch.cuda.device_count() if torch.cuda.is_available() else 0
         self.train_batch_size = train_batch_size
         self.eval_batch_size = eval_batch_size
+        self.tb_writer = tb_writer
         self.log_dir = log_dir
 
         if device is None:
@@ -75,16 +53,13 @@ class ElectraTrainer(object):
         if eval_batch_size is None:
             self.eval_batch_size = train_batch_size
 
-        logging.basicConfig(filename=f'{log_dir}/electra-{datetime.now().date()}.log', level=logging.INFO)
+        if tb_writer:
+            from torch.utils.tensorboard import SummaryWriter
+            self.writer = SummaryWriter(log_dir=tb_dir)
+
+        logging.basicConfig(filename=f'{log_dir}/{self.model_name}-{datetime.now().date()}.log', level=logging.INFO)
 
     def build_dataloaders(self, train_test_split=0.1, train_shuffle=True, eval_shuffle=True):
-        """
-        Builds the Training and Eval DataLoaders
-        :param train_test_split: The ratio split of test to train data.
-        :param train_shuffle: (bool) True if you wish to shuffle the train_dataset.
-        :param eval_shuffle: (bool) True if you wish to shuffle the eval_dataset.
-        :return: train dataloader and evaluation dataloader.
-        """
         dataset_len = len(self.dataset)
         eval_len = int(dataset_len * train_test_split)
         train_len = dataset_len - eval_len
@@ -96,28 +71,29 @@ class ElectraTrainer(object):
         return train_loader, eval_loader
     def train(self,
               epochs,
-              optimizer,
-              scheduler,
               train_dataloader,
               eval_dataloader,
               log_steps,
               ckpt_steps,
-              ckpt_dir=None,
               gradient_accumulation_steps=1):
-        # optimizer = Adafactor(self.model.parameters())
+
+        optimizer = Adafactor(self.model.parameters())
         losses = {}
         global_steps = 0
         local_steps = 0
         step_loss = 0.0
+        start_epoch = 0
+        start_step = 0
 
-        if ckpt_dir is not None:
-            assert os.path.isdir(ckpt_dir)
-            try:
-                logging.info(f'{datetime.now()} | Continuing from checkpoint...')
-                self.model.load_state_dict(torch.load(f'{ckpt_dir}/electra_model_state_dict.pt', map_location=self.device))
-                optimizer.load_state_dict(torch.load(f'{ckpt_dir}/electra_optimizer_state_dict.pt'))
-            except Exception as e:
-                logging.info(f'{datetime.now()} | No checkpoint was found | {e}')
+        if os.path.isfile(f'{self.checkpoint_path}/{self.model_name}.pth'):
+            checkpoint = torch.load(f'{self.checkpoint_path}/{self.model_name}.pth', map_location=self.device)
+            start_epoch = checkpoint['epoch']
+            losses = checkpoint['loss']
+            global_steps = checkpoint['train_step']
+            start_step = global_steps if start_epoch==0 else global_steps % len(train_dataloader)
+
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
         self.model.train()
 
@@ -131,7 +107,7 @@ class ElectraTrainer(object):
         logging.info(f'{datetime.now()} | Epochs: {epochs} | log_steps: {log_steps} | ckpt_steps: {ckpt_steps}')
         logging.info(f'{datetime.now()} | gradient_accumulation_steps: {gradient_accumulation_steps}')
 
-        for epoch in range(epochs): #tqdm(range(epochs), desc='Epochs', position=0):
+        for epoch in range(start_epoch, epochs): #tqdm(range(epochs), desc='Epochs', position=0):
             logging.info(f'{datetime.now()} | Epoch: {epoch}')
             pb = tqdm(enumerate(train_dataloader),
                       desc=f'Epoch-{epoch} Iterator',
@@ -139,6 +115,8 @@ class ElectraTrainer(object):
                       bar_format='{l_bar}{bar:10}{r_bar}'
                       )
             for step, batch in pb:
+                if step < start_step:
+                    continue
                 input_data = batch
                 input_data = input_data.to(self.device)
                 output = self.model(input_data)
@@ -152,35 +130,29 @@ class ElectraTrainer(object):
                 global_steps += 1
 
                 if global_steps % gradient_accumulation_steps == 0:
-                    scheduler.step()
                     optimizer.step()
-                    optimizer.zero_grad()
                     self.model.zero_grad()
 
                 if global_steps % log_steps == 0:
+                    if self.tb_writer:
+                        self.writer.add_scalar('Train/Loss', step_loss / local_steps, global_steps)
+                        self.writer.close()
                     pb.set_postfix_str(f'''{datetime.now()} | Train Loss: {step_loss / local_steps} | Steps: {global_steps}''')
-                    with open(f'{self.log_dir}/electra_train_results.json', 'w') as results_file:
+                    with open(f'{self.log_dir}/{self.model_name}_train_results.json', 'w') as results_file:
                         json.dump(losses, results_file)
                         results_file.close()
                     step_loss = 0.0
                     local_steps = 0
 
                 if global_steps % ckpt_steps == 0:
-                    # evaluating before every checkpoint
-                    # self.evaluate(eval_dataloader)
-                    # self.model.train()
-                    model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
-                    torch.save(model_to_save.state_dict(), f'{ckpt_dir}/last_electra_model_state_dict.pt')
-                    torch.save(optimizer.state_dict(), f'{ckpt_dir}/last_electra_optimizer_state_dict.pt')
+                    self.save(epoch, self.model, optimizer, losses, global_steps)
+                    logging.info(f'{datetime.now()} | Saved checkpoint to: {self.checkpoint_path}')
 
-                    logging.info(f'{datetime.now()} | Saved checkpoint to: {ckpt_dir}')
             # Evaluate every epoch
             self.evaluate(eval_dataloader)
             self.model.train()
 
-        model_to_save = self.model.module if hasattr(self.model, 'module') else self.model
-        torch.save(model_to_save.state_dict(), f'{ckpt_dir}/last_electra_model_state_dict.pt')
-        torch.save(optimizer.state_dict(), f'{ckpt_dir}/last_electra_optimizer_state_dict.pt')
+        self.save(epochs,self.model,optimizer,losses, global_steps)
 
         return self.model
 
@@ -191,7 +163,6 @@ class ElectraTrainer(object):
         self.model.eval()
 
         eval_loss = 0.0
-        perplexity = 0.0
         eval_steps = 0
 
         logging.info(f'{datetime.now()} | Evaluating...')
@@ -207,29 +178,38 @@ class ElectraTrainer(object):
                 output = self.model(input_data)
 
             tmp_eval_loss = output.loss
-            tmp_perplexity = torch.exp(tmp_eval_loss)
 
             if self.n_gpu > 1:
                 tmp_eval_loss = tmp_eval_loss.mean()
 
             eval_loss += tmp_eval_loss.item()
-            perplexity += tmp_perplexity.item()
             eval_steps += 1
 
             total_eval_loss = eval_loss/eval_steps
-            total_perplexity= perplexity/eval_steps
 
-            logging.info(f'{datetime.now()} | Step: {step} | Eval Loss: {total_eval_loss} | Perplexity: {total_perplexity}')
-            with open(f'{self.log_dir}/last_electra_eval_results.txt', 'a+') as results_file:
-                results_file.write(f'{datetime.now()} | Step: {step} | Eval Loss: {total_eval_loss} | Perplexity: {total_perplexity}\n')
+            if self.tb_writer:
+                self.writer.add_scalar('Eval/Loss', eval_loss, eval_steps)
+                self.writer.close()
+            logging.info(f'{datetime.now()} | Step: {step} | Eval Loss: {total_eval_loss}')
+            with open(f'{self.log_dir}/{self.model_name}_eval_results.txt', 'a+') as results_file:
+                results_file.write(f'{datetime.now()} | Step: {step} | Eval Loss: {total_eval_loss}\n')
                 results_file.close()
 
         return None
+    def save(self, epoch, model, optimizer, losses, train_step):
+        torch.save({
+            'epoch': epoch,  # 현재 학습 epoch
+            'model_state_dict': model.state_dict(),  # 모델 저장
+            'optimizer_state_dict': optimizer.state_dict(),  # 옵티마이저 저장
+            'losses': losses,  # Loss 저장
+            'train_step': train_step,  # 현재 진행한 학습
+        }, f'{self.checkpoint_path}/{self.model_name}.pth')
 
-if __name__ == '__main__':
+
+def main():
     torch.manual_seed(9)
     # 1. Config
-    train_config, gen_config, disc_config = ElectraConfig(config_path='../config/electra-train.json').get_config()
+    train_config, gen_config, disc_config = ElectraConfig(config_path='../config/electra/electra-train.json').get_config()
 
     # 2. Tokenizer
     tokenizer = BertTokenizer(vocab_file=train_config.vocab_path, do_lower_case=False)
@@ -285,35 +265,15 @@ if __name__ == '__main__':
     )
 
 
-    trainer = ElectraTrainer(dataset, model, tokenizer, train_config.max_len, train_batch_size=train_config.batch_size, eval_batch_size=train_config.batch_size)
+    trainer = ElectraTrainer(dataset, model, tokenizer, train_config.max_len, model_name=train_config.model_name, train_batch_size=train_config.batch_size, eval_batch_size=train_config.batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
-    # Prepare optimizer
-    num_train_optimization_steps = int(
-        len(train_dataloader) / train_config.batch_size / train_config.gradient_accumulation_steps)
-
-    warmup_steps = int(num_train_optimization_steps * 0.1)
-
-    param_optimizer = list(model.named_parameters())
-    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
-    optimizer_grouped_parameters = [
-        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
-         'weight_decay': 0.01},
-        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-    ]
-    optimizer = AdamW(params=optimizer_grouped_parameters, lr=2e-4, eps=1e-8)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps,
-                                                num_training_steps=num_train_optimization_steps)
-
     model = trainer.train(epochs=train_config.epochs,
-                          optimizer = optimizer,
-                          scheduler = scheduler,
                           train_dataloader=train_dataloader,
                           eval_dataloader=eval_dataloader,
                           log_steps=train_config.log_steps,
                           ckpt_steps=train_config.ckpt_steps,
-                          ckpt_dir= train_config.checkpoint_path,
                           gradient_accumulation_steps=train_config.gradient_accumulation_steps)
-    # model save
-    torch.save(model, train_config.checkpoint_path)
 
+if __name__ == '__main__':
+    main()

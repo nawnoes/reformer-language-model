@@ -1,8 +1,7 @@
 {
-  "vocab_path" : "../data/wpm-vocab-all.txt",
+  "vocab_path" : "../data/wiki-vocab.txt",
   "data_path" :"../data/electra/" ,
   "checkpoint_path" : "../checkpoints",
-  "checkpoint_filename" : "electra_reformer.bin",
   "generator_config_path": "../config/generator.json",
   "discriminator_config_path": "../config/discriminator.json",
   "max_len" : 512,

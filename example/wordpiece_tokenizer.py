@@ -1,13 +1,13 @@
 from transformers.tokenization_bert import BertTokenizer
 
 vocab_path = "../data/wordpiece_pretty.txt"
-vocab_path2 = "../data/vocab.txt"
-vocab_path3 = "../data/wpm-vocab-all.txt"
+vocab_path2 = "../data/wpm-vocab-all.txt"
+vocab_path3 = "../data/wiki-vocab.txt"
 
 tokenizer = BertTokenizer(vocab_file=vocab_path3, do_lower_case=False)
 
 """  """
-test_str = ' [CLS] 나는 워드피스 토크나이저를 써요. 성능이 좋은지 테스트 해보려 합니다. [SEP]'
+test_str = ' [CLS] 나는 워드피스 토크나이저를 써요. 하리보가 걸어다니네? 하리보보 하리보 [SEP]'
 print('테스트 문장: ',test_str)
 encoded_str = tokenizer.encode(test_str,add_special_tokens=False)
 print('문장 인코딩: ',encoded_str)

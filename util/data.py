@@ -48,11 +48,11 @@ def make_data_under_maxlen( tokenizer, max_len, dir_path, file_name, empty_line 
 
 if __name__ == '__main__':
     # vocab 경로
-    wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
+    wordpiece_vocab_path = "../data/wiki-vocab.txt"
 
     # 데이터 경로
-    # dir_path = "/Volumes/My Passport for Mac/00_nlp/PretrainingData/raw"
-    dir_path = "../data/novel"
+    dir_path = "/Volumes/My Passport for Mac/00_nlp/wiki"
+    # dir_path = "../data/novel"
 
 
     # 토크나이즈
@@ -67,4 +67,4 @@ if __name__ == '__main__':
         if ".txt"in file_name :
             progress_bar.set_description(f'file name: {file_name}')
             full_file_path = f'{dir_path}/{file_name}'
-            make_data_under_maxlen(tokenizer, 5120,dir_path,file_name,empty_line=False)
+            make_data_under_maxlen(tokenizer, 1024,dir_path,file_name,empty_line=False)

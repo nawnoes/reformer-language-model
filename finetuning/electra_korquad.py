@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 output_dir = ".."
 # checkpoint = os.path.join(gdrive_path, "checkpoints/epoch27-reformer-small.pt")
 train_file = "../data/korquad/KorQuAD_v1.0_train.json"
-config_path = "../config/electra-korquad-finetuning.json"
+config_path = "../config/electra/electra-korquad-finetuning.json"
 #################
 # Hyper Parameter
 #################

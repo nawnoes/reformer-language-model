@@ -1,0 +1,15 @@
+{
+  "vocab_path" : "../data/wiki-vocab.txt",
+  "data_path" :"../data/wiki/" ,
+  "checkpoint_path" : "../checkpoints",
+  "model_name": "reformer-autoregressive-base",
+  "dim": 768,
+  "depth": 12,
+  "n_head": 12,
+  "max_seq_len" : 1024,
+  "batch_size" : 2,
+  "epochs" : 10,
+  "log_steps" : 1,
+  "ckpt_steps" : 100,
+  "gradient_accumulation_steps" : 1
+}

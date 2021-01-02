@@ -1,22 +1,25 @@
 import os
+import json
 import argparse
 from tokenizers import BertWordPieceTokenizer
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--corpus_file", type=str, default="../data/namuwiki.txt")
+parser.add_argument("--corpus_file", type=str, default="/Volumes/My Passport for Mac/00_nlp/wiki/")
+parser.add_argument("--vocab_file", type=str, default='../data/wiki-wp-vocab.txt')
 parser.add_argument("--vocab_size", type=int, default=22000)
 parser.add_argument("--limit_alphabet", type=int, default=6000)
+parser.add_argument("--wordpieces_prefix", type=str, default='##')
+
 
 args = parser.parse_args()
 
-# 파일 경로
-dir_path = "/Volumes/My Passport for Mac/00_nlp/PretrainingData/raw"
+dir_path =  args.corpus_file # 파일 경로
+file_list = os.listdir(dir_path) # 파일 경로 내 코퍼스 목록
+wordpiece_train_file = "./ch-{}-wpm-{}-wiki".format(args.limit_alphabet, args.vocab_size) # 워드피스 학습 파일
+vocab_file = args.vocab_file # 생성할 vocab 파일
 
-# 파일 경로 내 코퍼스 목록
-file_list = os.listdir(dir_path)
-
-# 코퍼스 목
+# 코퍼스 목록
 corpus_files =[]
 for file_name in file_list:
     if '.txt' in file_name: # txt 파일인 경우
@@ -28,13 +31,19 @@ tokenizer = BertWordPieceTokenizer(
     handle_chinese_chars=True,
     strip_accents=False, # Must be False if cased model
     lowercase=False,
-    wordpieces_prefix="##"
-)
+    wordpieces_prefix=args.wordpieces_prefix)
 
 tokenizer.train(
     files=corpus_files,
     limit_alphabet=args.limit_alphabet,
-    vocab_size=args.vocab_size
+    vocab_size=args.vocab_size,
+    wordpieces_prefix=args.wordpieces_prefix
 )
+tokenizer.save(wordpiece_train_file,True)
 
-tokenizer.save("./ch-{}-wpm-{}-pretty-all".format(args.limit_alphabet, args.vocab_size),True)
+f = open(vocab_file,'w',encoding='utf-8')
+with open(wordpiece_train_file) as json_file:
+    json_data = json.load(json_file)
+    for item in json_data["model"]["vocab"].keys():
+        f.write(item+'\n')
+    f.close()
