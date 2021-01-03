@@ -90,7 +90,7 @@ class ElectraTrainer(object):
             start_epoch = checkpoint['epoch']
             losses = checkpoint['loss']
             global_steps = checkpoint['train_step']
-            start_step = global_steps if start_epoch==0 else global_steps % len(train_dataloader)
+            start_step = global_steps if start_epoch==0 else global_steps*self.train_batch_size % len(train_dataloader)
 
             self.model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -265,7 +265,7 @@ def main():
     )
 
 
-    trainer = ElectraTrainer(dataset, model, tokenizer, train_config.max_len, model_name=train_config.model_name, train_batch_size=train_config.batch_size, eval_batch_size=train_config.batch_size)
+    trainer = ElectraTrainer(dataset, model, tokenizer, train_config.max_len,checkpoint_path=train_config.checkpoint_path, model_name=train_config.model_name, train_batch_size=train_config.batch_size, eval_batch_size=train_config.batch_size)
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
     model = trainer.train(epochs=train_config.epochs,

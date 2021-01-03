@@ -91,7 +91,7 @@ class ReformerTrainer(object):
             start_epoch = checkpoint['epoch']
             losses = checkpoint['loss']
             global_steps = checkpoint['train_step']
-            start_step = global_steps if start_epoch==0 else global_steps % len(train_dataloader)
+            start_step = global_steps if start_epoch==0 else global_steps*self.train_batch_size % len(train_dataloader)
 
             self.model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -246,7 +246,7 @@ def main():
 
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
-    model = trainer.train(epochs=config.epoch,
+    model = trainer.train(epochs=config.epochs,
                           train_dataloader=train_dataloader,
                           eval_dataloader=eval_dataloader,
                           log_steps=config.log_steps,

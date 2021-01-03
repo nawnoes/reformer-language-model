@@ -29,8 +29,8 @@ def make_data_under_maxlen( tokenizer, max_len, dir_path, file_name, empty_line 
                      desc='Data Maker',
                      total=num_lines):
         line = line[:-1]
-        line_len = len(tokenizer.encode(line))
-        added_doc_len = doc_len +line_len
+        line_len = len(tokenizer.encode(line,add_special_tokens=False,padding=False,max_length=max_len-2,truncation=True))
+        added_doc_len = doc_len + line_len +1
         if empty_line and line =="":
             return_file.write(doc + "\n")
             doc = "[CLS] "
@@ -43,6 +43,8 @@ def make_data_under_maxlen( tokenizer, max_len, dir_path, file_name, empty_line 
             # print(f"max_len-{max_len} real_len-{len(tokenizer.encode(doc))} doc-{doc}\n\n")
             doc = "[CLS] "+line
             doc_len = line_len+1
+        # elif doc_len>=max_len+1:
+
     return_file.close()
     data_file.close()
 
