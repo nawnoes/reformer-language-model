@@ -13,65 +13,6 @@ from torch.utils.data import Dataset, DataLoader, random_split
 from transformers import BertTokenizer
 
 
-class EnWikiDataset(Dataset):
-
-    def __init__(self, path="", prefix="train"):
-
-        assert os.path.isdir(path)
-
-        self.documents = []
-        filename_list = os.listdir(path)
-        for file in filename_list:
-            path_to_file = os.path.join(path, file)
-            if not os.path.isfile(path_to_file):
-                continue
-            self.documents.append(path_to_file)
-
-    def __len__(self):
-        """ Returns the number of documents. """
-        return len(self.documents)
-
-    def __getitem__(self, idx):
-        document_path = self.documents[idx]
-        document_name = document_path.split("/")[-1]
-
-        items = []
-
-        with open(document_path, encoding="utf-8") as source:
-            raw_text = source.readlines()
-            for obj in raw_text:
-                text = json.loads(obj)['text']
-                text = re.sub('\\n', ' ', text)
-                text = re.sub('\\s+', ' ', text)
-                items.append(text)
-
-        return items
-
-class NamuWikiDataset(Dataset):
-    def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
-        print('namu wiki data load start')
-
-        data_file = open(path, 'r', encoding="utf-8")
-        self.docs = []
-        doc = ""
-        while True:
-            line = data_file.readline()
-            if not line: break
-
-            line = line[:-1]
-            if len(tokenizer.encode(doc)) <max_len and len(tokenizer.encode(doc + line))<max_len:
-                doc += line
-            elif len(tokenizer.encode(doc + line))>= max_len and len(tokenizer.encode(doc))<max_len:
-                self.docs.append(doc)
-                # print(f"max_len-{max_len} real_len-{len(tokenizer.encode(doc))} doc-{doc}\n\n")
-                doc = line
-        print('namu wiki data load complete')
-    def __len__(self):
-        """ Returns the number of documents. """
-        return len(self.docs)
-    def __getitem__(self, idx):
-        return self.docs[idx]
-
 class DatasetForMLM(Dataset):
     def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
         logging.info('start wiki data load')
@@ -130,52 +71,20 @@ class DatasetForMLM(Dataset):
         return inputs, labels
 
     def _tokenize_input_ids(self, input_ids: list, pad_to_max_length: bool = True):
-        inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=True, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt',truncation=True))
+        inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=False, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt',truncation=True))
         return inputs
     def __len__(self):
         """ Returns the number of documents. """
         return len(self.docs)
     def __getitem__(self, idx):
         inputs = self._tokenize_input_ids(self.docs[idx], pad_to_max_length=True)
-        inputs, labels = self.mask_tokens(inputs)
+        inputs, labels = self.mask_tokens(inputs,pad=True)
 
         inputs= inputs.squeeze()
+        inputs_mask = inputs != 0
         labels= labels.squeeze()
 
-        return inputs, labels
-
-class WikiDatasetForAutoRegressive(Dataset):
-    def __init__(self, tokenizer, max_len, path="../data/namuwiki.txt"):
-        logging.info('start wiki data load')
-
-        self.tokenizer = tokenizer
-        self.max_len =max_len
-        self.docs = []
-
-        num_lines = sum(1 for line in open(path, 'r',encoding='utf-8'))
-        data_file =  open(path, 'r',encoding='utf-8')
-
-        for line in tqdm(data_file,
-                         desc='namuwiki data loader',
-                         total=num_lines):
-            line = line[:-1]
-            self.docs.append(line)
-        logging.info('complete data load')
-
-    def _tokenize_input_ids(self, input_ids: list, add_special_tokens:bool = False, pad_to_max_length: bool = True):
-        inputs = torch.tensor(self.tokenizer.encode(input_ids, add_special_tokens=add_special_tokens, max_length=self.max_len, pad_to_max_length=pad_to_max_length, return_tensors='pt',truncation=True))
-        return inputs
-    def __len__(self):
-        return len(self.docs)
-
-    def __getitem__(self, idx):
-        inputs = self._tokenize_input_ids(self.docs[idx], pad_to_max_length=True)
-        labels = inputs.clone()
-
-        inputs= inputs.squeeze()
-        labels= labels.squeeze()
-
-        return inputs, labels
+        return inputs, inputs_mask, labels
 
 class DatasetForAutoRegressive(Dataset):
     def __init__(self, tokenizer, max_len, dir_path):

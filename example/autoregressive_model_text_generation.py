@@ -23,7 +23,7 @@ if __name__ =="__main__":
     GPT-3 samll     12         768           12        64         0.5M        6.0 x 10^-4       125M
     GPT-3 medium    24         1024          16        65         0.5M        3.0 x 10^-4       350M
     """
-    max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) ==0이어야함.
+    max_len = 1024 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) ==0이어야함.
     batch_size = 2
     dim = 768
     depth = 12
@@ -39,9 +39,12 @@ if __name__ =="__main__":
         depth=depth,
         heads=heads,
         max_seq_len=max_len,
+        causal=True
     )
+    # checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
+    # model.load_state_dict(checkpoint['model_state_dict'])
     model.load_state_dict(torch.load(PATH, map_location=torch.device('cpu')))
-
+    model.eval()
     sent = '무언가를 단순하게 만들기 위해서는 생각을 깔끔히 정리해야 합니다. '
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)

@@ -89,7 +89,7 @@ class ReformerTrainer(object):
         if os.path.isfile(f'{self.checkpoint_path}/{self.model_name}.pth'):
             checkpoint = torch.load(f'{self.checkpoint_path}/{self.model_name}.pth', map_location=self.device)
             start_epoch = checkpoint['epoch']
-            losses = checkpoint['loss']
+            losses = checkpoint['losses']
             global_steps = checkpoint['train_step']
             start_step = global_steps if start_epoch==0 else global_steps*self.train_batch_size % len(train_dataloader)
 
@@ -118,9 +118,9 @@ class ReformerTrainer(object):
             for step, batch in pb:
                 if step < start_step:
                     continue
-                inputs, labels = batch
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                output = self.model(inputs)
+                inputs, inputs_mask, labels = batch
+                inputs, inputs_mask, labels = inputs.to(self.device), inputs_mask.to(self.device), labels.to(self.device)
+                output = self.model(inputs, input_mask=inputs_mask)
 
                 # only calculating loss on masked tokens
                 loss_mx = labels != -100
@@ -183,11 +183,11 @@ class ReformerTrainer(object):
                                 leave=True,
                                 total=len(dataloader),
                                 bar_format='{l_bar}{bar:10}{r_bar}'):
-            inputs, labels = batch
-            inputs, labels = inputs.to(self.device), labels.to(self.device)
+            inputs, inputs_mask, labels = batch
+            inputs, inputs_mask, labels = inputs.to(self.device), inputs_mask.to(self.device), labels.to(self.device)
 
             with torch.no_grad():
-                output = self.model(inputs)
+                output = self.model(inputs, input_mask=inputs_mask)
 
             loss_mx = labels != -100
             output_ids = output[loss_mx].view(-1, self.tokenizer.vocab_size)
@@ -225,7 +225,7 @@ def main():
     torch.manual_seed(9)
 
     # Config
-    config = ModelConfig(config_path='../config/mlm/mlm-pretrain.json').get_config()
+    config = ModelConfig(config_path='../config/mlm/mlm-pretrain-small.json').get_config()
     # Tokenizer
     tokenizer = BertTokenizer(vocab_file=config.vocab_path, do_lower_case=False)
 
