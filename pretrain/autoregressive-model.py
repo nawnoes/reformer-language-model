@@ -87,7 +87,7 @@ class ReformerTrainer(object):
         if os.path.isfile(f'{self.checkpoint_path}/{self.model_name}.pth'):
             checkpoint = torch.load(f'{self.checkpoint_path}/{self.model_name}.pth', map_location=self.device)
             start_epoch = checkpoint['epoch']
-            losses = checkpoint['loss']
+            losses = checkpoint['losses']
             global_steps = checkpoint['train_step']
             start_step = global_steps if start_epoch==0 else global_steps*self.train_batch_size % len(train_dataloader)
 
@@ -149,6 +149,7 @@ class ReformerTrainer(object):
             # Evaluate every epoch
             self.evaluate(eval_dataloader)
             self.model.train()
+            start_step = 0
 
         self.save(epochs,self.model,optimizer,losses, global_steps)
 

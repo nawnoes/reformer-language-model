@@ -151,6 +151,7 @@ class ElectraTrainer(object):
             # Evaluate every epoch
             self.evaluate(eval_dataloader)
             self.model.train()
+            start_step = 0
 
         self.save(epochs,self.model,optimizer,losses, global_steps)
 
