@@ -123,9 +123,19 @@ class ReformerLM(nn.Module):
 ![](./images/mlm_eval_perplexity.png)
 #### Fine-Tuning Test 결과
 ##### Korquad v1.0
-|Task| exact_match | f1 score|
-|------|---|---|
-|Korquad v1.0|56.8|84.96|
+reformer-bert-small 모델에 대한 결과
+**모델세팅**
+```t
+max_len = 512  
+batch_size = 128
+dim = 512
+depth = 6
+heads = 8
+```
+|       model       | exact_match | f1 score|
+|:-----------------:|-------------|---------|
+|reformer-bert-small|    50.5     |  78.58  |
+
 
 예상보다 `exact_match` 부분에서 성능이 좋지 않게 나왔다. 생각해볼수 있는 개선 사항으로는
 - 모델의 크기 키우는 방법
@@ -222,12 +232,12 @@ class ReformerAutoRegressiveModel(nn.Module):
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 ##### 모델 
 ## reformer-electra config
-|                 |               | Layers | Embedding Size | Hidden Size | # heads |
-| --------------- | ------------: | -----: | -------------: | ----------: | ------: |
-| `ELECTRA-Base`  | Discriminator |     12 |            768 |         768 |      12 |
-|                 |     Generator |     12 |            768 |         256 |       4 |
+|                  |               | Layers | Embedding Size | Hidden Size | # heads |
+| ---------------- | ------------: | -----: | -------------: | ----------: | ------: |
+| `ELECTRA-small`  | Discriminator |     12 |            128 |         256 |      12 |
+|                  |     Generator |     12 |            128 |         256 |       4 |
 ##### Pretrain
-##### ELECTRA-BASE Graph
+##### ELECTRA-Small Graph
 - 1 epoch
 ![](./images/electra_loss_graph_1_epoch.png)
 ##### Fine-tuning
@@ -235,10 +245,9 @@ class ReformerAutoRegressiveModel(nn.Module):
 ###### 실행
 `finetuning/electra-korquad.ipynb` colab에서 실행
 ###### 결과
-|                       | epoch | Exact Match(EM) |   F1   |
-| --------------------- | ----: | --------------: | -----: |
-| Reformer-ELECTRA-Base |     1 |           71.88 |  95.49 |
-| Reformer-ELECTRA-Base |     2 |           71.92 |  95.61 |
+|                        | epoch | Exact Match(EM) |   F1   |
+| ---------------------- | ----: | --------------: | -----: |
+| Reformer-ELECTRA-small |     5 |           52.04 |  78.53 |
 
  
  # References
