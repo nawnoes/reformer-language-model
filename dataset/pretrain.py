@@ -121,8 +121,10 @@ class DatasetForAutoRegressive(Dataset):
 
         inputs= inputs.squeeze()
         labels= labels.squeeze()
+        inputs_mask = inputs != 0
 
-        return inputs, labels
+
+        return inputs, labels, inputs_mask
 
 """
 문장 분리

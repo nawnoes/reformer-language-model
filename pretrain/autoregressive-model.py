@@ -116,9 +116,9 @@ class ReformerTrainer(object):
             for step, batch in pb:
                 if step < start_step:
                     continue
-                inputs, labels = batch
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                lm_logit, loss = self.model(inputs,labels)
+                inputs, labels, inputs_mask = batch
+                inputs, labels, inputs_mask = inputs.to(self.device), labels.to(self.device), inputs_mask.to(self.device)
+                lm_logit, loss = self.model(inputs,labels,input_mask=inputs_mask)
 
                 loss.backward()
 
