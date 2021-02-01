@@ -14,9 +14,10 @@ def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
     return result
 
 if __name__ =="__main__":
-    wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
-    PATH= "../checkpoints/1m_step_autoregressive_model_state_dict.pt"
-
+    # wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
+    wordpiece_vocab_path = "../data/wiki-vocab.txt"
+    # PATH= "../checkpoints/1m_step_autoregressive_model_state_dict.pt"
+    PATH = "../checkpoints/reformer-autoregressive-base.pth"
     # Model Hyperparameter
     """
     Model Name     layer      d_model      n_head    d_head    batchsize     learning rate     n_params
@@ -41,11 +42,11 @@ if __name__ =="__main__":
         max_seq_len=max_len,
         causal=True
     )
-    # checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
-    # model.load_state_dict(checkpoint['model_state_dict'])
-    model.load_state_dict(torch.load(PATH, map_location=torch.device('cpu')))
+    checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
+    model.load_state_dict(checkpoint['model_state_dict'])
+    # model.load_state_dict(torch.load(PATH, map_location=torch.device('cpu')))
     model.eval()
-    sent = '무언가를 단순하게 만들기 위해서는 생각을 깔끔히 정리해야 합니다. '
+    sent = '사람의 존재 의미는'
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:
@@ -56,14 +57,15 @@ if __name__ =="__main__":
       pred = output[0]
       next_token_pred = pred.squeeze()[len(tokenized_sentence)]
       top_k_sample = top_k(next_token_pred,9)
-      gen = tokenizer.decode(top_k_sample).replace(' ','')
-      if gen == '[SEP]':
-          pass
-
-      if '##'in gen:
-        sent += gen.replace('##','')
-      else:
-        sent += ' '+gen
-      print(sent)
-      tokenized_sentence = tokenizer.encode(sent, add_special_tokens=False)
+      # gen = tokenizer.decode(top_k_sample).replace(' ','')
+      tokenized_sentence = tokenized_sentence+top_k_sample.tolist()
+      # if gen == '[SEP]':
+      #     pass
+      #
+      # if '##'in gen:
+      #   sent += gen.replace('##','')
+      # else:
+      #   sent += ' '+gen
+      print(tokenizer.decode(tokenized_sentence,skip_special_tokens=True))
+      # tokenized_sentence = tokenizer.encode(sent, add_special_tokens=False)
 
