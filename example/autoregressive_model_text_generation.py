@@ -17,7 +17,7 @@ if __name__ =="__main__":
     # wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
     wordpiece_vocab_path = "../data/wiki-vocab.txt"
     # PATH= "../checkpoints/1m_step_autoregressive_model_state_dict.pt"
-    PATH = "../checkpoints/reformer-autoregressive-base.pth"
+    PATH = "../checkpoints/reformer-autoregressive-small.pth"
     # Model Hyperparameter
     """
     Model Name     layer      d_model      n_head    d_head    batchsize     learning rate     n_params
@@ -46,7 +46,7 @@ if __name__ =="__main__":
     model.load_state_dict(checkpoint['model_state_dict'])
     # model.load_state_dict(torch.load(PATH, map_location=torch.device('cpu')))
     model.eval()
-    sent = '사람의 존재 의미는'
+    sent = '사람이 철학적으로 생각하는 것은'
     padd_token_id = tokenizer.pad_token_id
     tokenized_sentence = tokenizer.encode(sent,add_special_tokens=False)
     while 1:
