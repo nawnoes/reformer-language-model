@@ -50,7 +50,7 @@ def make_data_under_maxlen( tokenizer, max_len, dir_path, file_name, empty_line 
 
 if __name__ == '__main__':
     # vocab 경로
-    wordpiece_vocab_path = "../data/wiki-vocab.txt"
+    wordpiece_vocab_path = "../data/vocab-v2.txt"
 
     # 데이터 경로
     dir_path = "/Volumes/My Passport for Mac/00_nlp/wiki"

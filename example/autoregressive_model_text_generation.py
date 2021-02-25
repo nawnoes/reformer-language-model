@@ -15,7 +15,7 @@ def sentence_mask_to_max_length(token_indices, max_length, pad_token_id = 0):
 
 if __name__ =="__main__":
     # wordpiece_vocab_path = "../data/wpm-vocab-all.txt"
-    wordpiece_vocab_path = "../data/wiki-vocab.txt"
+    wordpiece_vocab_path = "../data/vocab-v2.txt"
     # PATH= "../checkpoints/1m_step_autoregressive_model_state_dict.pt"
     PATH = "../checkpoints/reformer-autoregressive-small.pth"
     # Model Hyperparameter
