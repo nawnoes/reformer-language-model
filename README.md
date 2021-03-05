@@ -67,7 +67,7 @@ BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습
 | **L=12** |[12/128]|[12/256]|[12/512]|[**12/768 (BERT-Base)**]|
 
 ##### Reformer MLM Config
-**BERT-Small** 과 **BERT-Medium**의 중간 크기
+빠른 테스트를 위해 **BERT-base**의 절반 크기의 레이어 사용.
 ```
 # Model Hyperparameter
 max_len = 512     #전체 토큰 
@@ -139,7 +139,6 @@ heads = 8
 예상보다 `exact_match` 부분에서 성능이 좋지 않게 나왔다. 생각해볼수 있는 개선 사항으로는
 - 모델의 크기 키우는 방법
 - 학습 데이터를 증가시키는 방법. (kowiki 데이터만 학습시켰으므로)
-- 학습데이터에서 [CLS]와 [SEP] 토큰을 넣어주지 않은 부분 수정
 
 ### 2. Auto Regressive(ex. GPT 계열)
 Reformer Decoder를 이용한 Auto regressive language model.
