@@ -133,7 +133,7 @@ heads = 8
 ```
 |       model       | exact_match | f1 score|
 |:-----------------:|-------------|---------|
-|reformer-bert-small|    50.5     |  78.58  |
+|reformer-bert-small|    52.1     |  79.02  |
 
 
 예상보다 `exact_match` 부분에서 성능이 좋지 않게 나왔다. 생각해볼수 있는 개선 사항으로는
