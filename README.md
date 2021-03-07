@@ -54,7 +54,7 @@ nipa 정보통신진흥원 GPU 자원
 ## 🏭 Language Model 
 ### 1. Masked Language Model(ex. BERT without NSP,SOP..) 
 BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습 진행.
-<center><img src="./images/refomer-mlm.png" height="200"></center>
+<img src="./images/refomer-mlm.png" height="200" style="display:block">
 
 #### 모델 설정
 ##### BERT Model Config
