@@ -18,15 +18,15 @@ O(L log(L))로 개선
 - `Axial Positional Encoding`: 매우 큰 input sequence에 대해서도 positional encoding을 사용할 수 있게 하는 방법. 
 
 
-## 📘 Vocab & Tokenizer
+## Vocab & Tokenizer
 `Sentencepiece`와 `Wordpiece` 중 기존에 사용해보지 않은 Wordpiece Tokenizer를 이용한 Tokenizer 사용.
 센텐스피스와 워드피스 모두 Subword Tokenizer중 하나인 **BPE(Byte Pair Encoding)** 에 속한다. 센텐스피스의 경우 빈도수를 기반으로, 워드피스의 경우 likelihood를 기반으로 BPE을 수행한다. 
 
-## 💾 Data 
+## Data 
 #### 사용 데이터
 - 한국어 위키
 
-## 🖥 GPU
+## GPU
 ① nipa 정보통신진흥원 GPU 자원
 - GPU 할당량: 10TF
 - GPU 카드: RTX6000
@@ -34,7 +34,7 @@ O(L log(L))로 개선
 
 ② Google Colab pro
 
-## 🏭 Language Model 
+## Language Model 
 ### 1. Masked Language Model(ex. BERT without NSP,SOP..) 
 BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습 진행.
 ![](./images/refomer-mlm.png)
