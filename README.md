@@ -143,7 +143,7 @@ causal = True # True for ReformerLM Auto Regressive,
 `ELECTRA-small`의 모델 설정 사용
   
 |                  |               | Layers | Embedding Size | Hidden Size | # heads |
-| ---------------- | ------------: | -----: | -------------: | ----------: | ------: |
+| :--------------: | ------------: | -----: | -------------: | ----------: | ------: |
 | `ELECTRA-small`  | Discriminator |     12 |            128 |         256 |      12 |
 |                  |     Generator |     12 |            128 |         256 |       4 |로
 
@@ -151,16 +151,14 @@ causal = True # True for ReformerLM Auto Regressive,
 ① `/config/electra/`의 config 설정 확인  
 ② `/data` vocab 및 학습데이터 확인  
 ③ `/pretrain/electra-model.py` 실행 
-#### ELECTRA-Small Graph
-- 1 epoch
+#### Result
 ![](./images/electra_loss_graph_1_epoch.png)
 #### Fine-tuning
-1 epoch 진행 후 korquad 테스트.
 ##### 실행
 `finetuning/electra-korquad.ipynb` colab에서 실행
 ##### 결과
 |                        | Exact Match(EM) |   F1   |
-| ---------------------- | --------------: | -----: |
+| :--------------------: | --------------: | -----: |
 | Reformer-ELECTRA-small |           52.04 |  78.53 |
 |         KoBERT         |           51.75 |  79.15 |
 
