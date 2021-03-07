@@ -1,5 +1,5 @@
 # Reformer Language Model
-[reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)를 이용한 다양한 Reformer Language Model
+[lucidrains/reformer-pytorch](https://github.com/lucidrains/reformer-pytorch)를 이용한 다양한 Reformer Language Model
 
 ## Reformer
 2020년에 발표 된 모델로, `LSH(Local Sensitive Hashing)`, `RevNet(Reversivle Residual Network)`, `Chunked Feed Forward Layer`,
@@ -8,7 +8,7 @@
 ### Transformer의 단점
 - `attention 계산`: 길이 **L**을 가진 문장의 어텐션을 계산할 때, **O(L^2)** 의 메모리와 시간 복잡도를 가진다.
 - `많은 수의 레이어`: **N**개의 레이어틑 **N**배의 많은 메모리를 사용한다. 그리고 각각의 레이어는 역전파 계산을 위해 그 값들을 저장해둔다.
-- `Feed Forward 레이어의 크기: Feed Forward 레이어가 Attention의 Activation 깊이 보다 더 클 수 있다. 
+- `Feed Forward 레이어의 크기`: Feed Forward 레이어가 Attention의 Activation 깊이 보다 더 클 수 있다. 
 ### Reformer
 - `LSH(Local Sensitive Hashing)`: Dot-Product 사용하는 기존의 어텐션을 locality-sensitive hashing을 사용해 대체하면 기존의 O(L^2)을
 O(L log(L))로 개선
