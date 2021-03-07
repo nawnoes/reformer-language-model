@@ -35,7 +35,7 @@ O(L log(L))로 개선
 ② Google Colab pro
 
 ## Language Model 
-### 1. Masked Language Model(ex. BERT without NSP,SOP..) 
+### 1. Masked Language Model(ex. BERT) 
 BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습 진행.
 ![](./images/refomer-mlm.png)
 #### Model
@@ -90,7 +90,7 @@ heads = 8
 - 모델의 크기 키우는 방법
 - 학습 데이터를 증가시키는 방법
 
-### 2. Auto Regressive(ex. GPT 계열)
+### 2. Auto Regressive(ex. GPT-2,3)
 Reformer Decoder를 이용한 Auto regressive language model.
 ![](./images/reformer-autoregressive.png)
 #### Model
