@@ -36,7 +36,7 @@ O(L log(L))로 개선
 ## Language Model 
 ### 1. Masked Language Model(ex. BERT) 
 BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습 진행.
-![](./images/refomer-mlm.png)
+![](./images/mlm.png)
 #### Model
 ##### BERT Model Config
 |   |H=128|H=256|H=512|H=768|
@@ -48,7 +48,7 @@ BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습
 | **L=10** |[10/128]|[10/256]|[10/512]|[10/768]|
 | **L=12** |[12/128]|[12/256]|[12/512]|[**12/768 (BERT-Base)**]|
 ##### Reformer-mlm-small Config
-빠른 테스트를 위해 **BERT-base**의 절반 크기의 레이어 사용.
+**BERT-base**의 절반 크기의 레이어 사용.
 ```
 max_len = 512   
 batch_size = 128
@@ -91,7 +91,7 @@ heads = 8
 
 ### 2. Auto Regressive(ex. GPT-2,3)
 Reformer Decoder를 이용한 Auto regressive language model.
-![](./images/reformer-autoregressive.png)
+![](./images/alm.png)
 #### Model
 
 |Model Name|layer|d_model|n_head|d_head|batchsize|learning rate| n_params|
