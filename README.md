@@ -19,8 +19,7 @@ O(L log(L))로 개선
 
 
 ## Vocab & Tokenizer
-`Sentencepiece`와 `Wordpiece` 중 기존에 사용해보지 않은 Wordpiece Tokenizer를 이용한 Tokenizer 사용.
-센텐스피스와 워드피스 모두 Subword Tokenizer중 하나인 **BPE(Byte Pair Encoding)** 에 속한다. 센텐스피스의 경우 빈도수를 기반으로, 워드피스의 경우 likelihood를 기반으로 BPE을 수행한다. 
+`Sentencepiece`와 `Wordpiece` 중 기존에 사용해보지 않은 Wordpiece Tokenizer 사용.
 
 ## Data 
 #### 사용 데이터
@@ -161,8 +160,6 @@ causal = True # True for ReformerLM Auto Regressive,
 | :--------------------: | --------------: | -----: |
 | Reformer-ELECTRA-small |           52.04 |  78.53 |
 |         KoBERT         |           51.75 |  79.15 |
-
-
  
  # References
  - [The Reformer - Pushing the limits of language modeling](https://colab.research.google.com/drive/1MYxvC4RbKeDzY2lFfesN-CvPLKLk00CQ)
