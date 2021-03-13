@@ -35,7 +35,7 @@ O(L log(L))로 개선
 
 ## Language Model 
 ### 1. Masked Language Model(ex. BERT) 
-BERT에서 사용 MLM을 이용한 언어모델 학습. NSP와 SOP 없이 학습 진행.
+BERT에서 사용한 Masked Language Model을 이용한 언어모델 학습. NSP와 SOP 없이 학습.
 ![](./images/mlm.png)
 #### Model
 ##### BERT Model Config
@@ -89,17 +89,11 @@ heads = 8
 - 모델의 크기 키우는 방법
 - 학습 데이터를 증가시키는 방법
 
-### 2. Auto Regressive(ex. GPT-2,3)
+### 2. Auto Regressive(ex. GPT-2)
 Reformer Decoder를 이용한 Auto regressive language model.
 ![](./images/alm.png)
 #### Model
-
-|Model Name|layer|d_model|n_head|d_head|batchsize|learning rate| n_params|
-|----------|:---:|:-----:|:----:|:----:|:-------:|:-----------:|:-------:|
-|GPT-3 Samll  |12|768 |12|64|0.5M|6.0 x 10^-4|125M|
-|GPT-3 Medium |24|1024|16|65|0.5M|3.0 x 10^-4|350M|
-
-GPT-3 Small 과 동일한 모델 크기. **입력 토큰 수를 5120** 기존 모델들 대비 증가.
+GPT-2 Small 모델 크기. **입력 토큰 수 5120**로 학습 가능.
 ```text
 max_len = 5120 # AxialPositionalEmbedding을 위한 (79,64) 값 and max_len/(bucket_size*2) == 0 이어야한다.
 dim = 768
@@ -139,12 +133,12 @@ causal = True # True for ReformerLM Auto Regressive,
 ### 3. Replaced Token Detection(ex. ELECTRA)
 ![](https://t2.daumcdn.net/thumb/R720x0.fpng/?fname=http://t1.daumcdn.net/brunch/service/user/Zvf/image/_twj8fBpj3opipMwC-w7Scv89yM.png)
 #### Model 
-`ELECTRA-small`의 모델 설정 사용
+`ELECTRA-small` 모델
   
 |                  |               | Layers | Embedding Size | Hidden Size | # heads |
 | :--------------: | ------------: | -----: | -------------: | ----------: | ------: |
 | `ELECTRA-small`  | Discriminator |     12 |            128 |         256 |      12 |
-|                  |     Generator |     12 |            128 |         256 |       4 |로
+|                  |     Generator |     12 |            128 |         256 |       4 |
 
 #### Usage
 ① `/config/electra/`의 config 설정 확인  
