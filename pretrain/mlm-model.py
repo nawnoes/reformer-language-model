@@ -247,12 +247,12 @@ def main():
 
     train_dataloader, eval_dataloader = trainer.build_dataloaders(train_test_split=0.1)
 
-    model = trainer.train(epochs=config.epochs,
-                          train_dataloader=train_dataloader,
-                          eval_dataloader=eval_dataloader,
-                          log_steps=config.log_steps,
-                          ckpt_steps=config.ckpt_steps,
-                          gradient_accumulation_steps=config.gradient_accumulation_steps)
+    trainer.train(epochs=config.epochs,
+                  train_dataloader=train_dataloader,
+                  eval_dataloader=eval_dataloader,
+                  log_steps=config.log_steps,
+                  ckpt_steps=config.ckpt_steps,
+                  gradient_accumulation_steps=config.gradient_accumulation_steps)
 
 if __name__ == '__main__':
     main()

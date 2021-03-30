@@ -88,12 +88,12 @@ class ElectraTrainer(object):
         if os.path.isfile(f'{self.checkpoint_path}/{self.model_name}.pth'):
             checkpoint = torch.load(f'{self.checkpoint_path}/{self.model_name}.pth', map_location=self.device)
             start_epoch = checkpoint['epoch']
-            losses = checkpoint['loss']
+            losses = checkpoint['losses']
             global_steps = checkpoint['train_step']
             start_step = global_steps if start_epoch==0 else global_steps*self.train_batch_size % len(train_dataloader)
 
-            self.model.load_state_dict(checkpoint['model_state_dict'])
-            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            self.model.load_state_dict(checkpoint['model_state_dict'],strict=False)
+            # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
         self.model.train()
 
@@ -115,8 +115,8 @@ class ElectraTrainer(object):
                       bar_format='{l_bar}{bar:10}{r_bar}'
                       )
             for step, batch in pb:
-                if step < start_step:
-                    continue
+                # if step < start_step:
+                #     continue
                 input_data = batch
                 input_data = input_data.to(self.device)
                 output = self.model(input_data)

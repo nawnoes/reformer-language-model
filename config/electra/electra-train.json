@@ -1,5 +1,5 @@
 {
-  "vocab_path" : "../data/wiki-vocab.txt",
+  "vocab_path" : "../data/vocab-v2.txt",
   "data_path" :"../data/wiki/" ,
   "checkpoint_path" : "../checkpoints",
   "generator_config_path": "../config/electra/generator.json",
