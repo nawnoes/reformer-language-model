@@ -101,7 +101,7 @@ causal = True # True for ReformerLM Auto Regressive,
 ① `/config/autoregressive/`의 config 설정 확인  
 ② `/data` vocab 및 학습데이터 확인  
 ③ `/pretrain/autoregressive-model.py` 실행 
-### Pretraining
+### Pretraining Result
 1052199 step 학습 도중 서버 중지로 학습 중지.
 ![](./images/autoregressive_train_losses.png)
 
@@ -139,7 +139,7 @@ causal = True # True for ReformerLM Auto Regressive,
 ① `/config/electra/`의 config 설정 확인  
 ② `/data` vocab 및 학습데이터 확인  
 ③ `/pretrain/electra-model.py` 실행 
-### Result
+### Pretraining Result
 ![](./images/electra_loss_graph_1_epoch.png)
 ### Korquad v1.0 Fine-tuning
 |                        | Exact Match(EM) |   F1   |
