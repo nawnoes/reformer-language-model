@@ -29,8 +29,11 @@ def make_data_under_maxlen( tokenizer, max_len, dir_path, file_name, empty_line 
                      desc='Data Maker',
                      total=num_lines):
         line = line[:-1]
-        line_len = len(tokenizer.encode(line,add_special_tokens=False,padding=False,max_length=max_len-2,truncation=True))
-        added_doc_len = doc_len + line_len +1
+        line_len = len(tokenizer.encode(line,add_special_tokens=False,padding=False,max_length=max_len -2,truncation=True))
+        if line_len <1:
+            continue
+        added_doc_len = doc_len + line_len +1 # [SEP] 토큰 하나 고려
+
         if empty_line and line =="":
             return_file.write(doc + "\n")
             doc = "[CLS] "
@@ -38,23 +41,23 @@ def make_data_under_maxlen( tokenizer, max_len, dir_path, file_name, empty_line 
         elif  doc_len <max_len+1 and added_doc_len<max_len+1:
             doc += line+" [SEP] "
             doc_len += line_len+1
-        elif added_doc_len>= max_len+1 and doc_len<max_len+1:
+        elif doc_len<max_len+1 and added_doc_len>= max_len+1:
             return_file.write(doc+"\n")
             # print(f"max_len-{max_len} real_len-{len(tokenizer.encode(doc))} doc-{doc}\n\n")
-            doc = "[CLS] "+line
-            doc_len = line_len+1
-        # elif doc_len>=max_len+1:
+            doc = "[CLS] "+line+" [SEP] "
+            doc_len = line_len+2
 
     return_file.close()
     data_file.close()
 
 if __name__ == '__main__':
     # vocab 경로
-    wordpiece_vocab_path = "../data/vocab-v2.txt"
+    wordpiece_vocab_path = "../data/vocab-v3.txt"
 
     # 데이터 경로
-    dir_path = "/Volumes/My Passport for Mac/00_nlp/wiki"
+    # dir_path = "/Volumes/My Passport for Mac/00_nlp/wiki"
     # dir_path = "../data/novel"
+    dir_path = "/Users/a60058238/Desktop/Google Drive/nlp_data/plain_data"
 
 
     # 토크나이즈
@@ -69,4 +72,4 @@ if __name__ == '__main__':
         if ".txt"in file_name :
             progress_bar.set_description(f'file name: {file_name}')
             full_file_path = f'{dir_path}/{file_name}'
-            make_data_under_maxlen(tokenizer, 1024,dir_path,file_name,empty_line=False)
+            make_data_under_maxlen(tokenizer, 128,dir_path,file_name,empty_line=False)

@@ -5,8 +5,8 @@ from tokenizers import BertWordPieceTokenizer
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--corpus_file", type=str, default="/Volumes/My Passport for Mac/00_nlp/wiki/")
-parser.add_argument("--vocab_file", type=str, default='../data/wiki-wp-vocab.txt')
+parser.add_argument("--corpus_file", type=str, default="/Users/a60058238/Desktop/Google Drive/nlp_data/plain_data")
+parser.add_argument("--vocab_file", type=str, default='../data/vocab-v3.txt')
 parser.add_argument("--vocab_size", type=int, default=22000)
 parser.add_argument("--limit_alphabet", type=int, default=6000)
 parser.add_argument("--wordpieces_prefix", type=str, default='##')
